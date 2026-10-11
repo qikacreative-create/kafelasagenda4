@@ -62,7 +62,7 @@ export const LoginAndSetupScreen: React.FC<LoginAndSetupScreenProps> = ({
     if (m.includes('invalid-credential') || m.includes('user-not-found') || m.includes('wrong-password')) {
       return isSignup
         ? 'Format data pendaftaran tidak valid.'
-        : 'Nomor WhatsApp atau Kata Sandi salah. Jika belum pernah mendaftar di database Firebase ini, silakan klik tombol "Daftar di sini" di bawah atau coba "Mode Simulasi (Demo)".';
+        : 'Nomor WhatsApp atau Kata Sandi salah. Jika belum pernah mendaftar di database Firebase ini, silakan klik tombol "Daftar di sini" di bawah';
     }
     if (m.includes('email-already-in-use')) {
       return 'Nomor WhatsApp ini sudah terdaftar. Silakan gunakan menu "Masuk (Login)" atau masukkan kata sandi yang sesuai.';
@@ -71,19 +71,19 @@ export const LoginAndSetupScreen: React.FC<LoginAndSetupScreenProps> = ({
       return 'Kata sandi terlalu pendek. Minimal 6 karakter.';
     }
     if (m.includes('network-request-failed')) {
-      return 'Gagal terhubung ke Firebase. Periksa jaringan internet Anda atau gunakan Mode Simulasi.';
+      return 'Gagal terhubung ke Firebase. Periksa jaringan internet Anda';
     }
     if (m.includes('too-many-requests')) {
-      return 'Terlalu banyak percobaan gagal. Silakan tunggu beberapa saat atau coba Mode Simulasi.';
+      return 'Terlalu banyak percobaan gagal. Silakan tunggu beberapa saat.';
     }
     if (m.includes('popup-closed-by-user')) {
       return 'Jendela popup Google ditutup. Silakan coba lagi atau gunakan login nomor WhatsApp.';
     }
     if (m.includes('unauthorized-domain') || m.includes('not authorized')) {
-      return 'Domain preview belum didaftarkan di Firebase Console -> Authentication -> Authorized Domains. Silakan masuk menggunakan Nomor WhatsApp & Sandi, atau masuk dengan Mode Simulasi.';
+      return 'Domain preview belum didaftarkan di Firebase Console -> Authentication -> Authorized Domains. Silakan masuk menggunakan Nomor WhatsApp & Sandi';
     }
     if (m.includes('belum siap')) {
-      return 'Konfigurasi Firebase belum siap. Silakan klik ikon gerigi di kanan atas untuk mengecek konfigurasi atau gunakan Mode Simulasi.';
+      return 'Konfigurasi Firebase belum siap. Silakan klik ikon gerigi di kanan atas untuk mengecek konfigurasi';
     }
     return raw;
   };

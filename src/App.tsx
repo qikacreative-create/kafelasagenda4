@@ -246,6 +246,7 @@ export default function App() {
     return 'KALENDER';
   });
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -1366,6 +1367,344 @@ export default function App() {
   const textPrimaryColor = isKacaGelap ? '#FFFFFF' : '#2C3E50';
   const textSecondaryColor = isKacaGelap ? '#BBBBBB' : '#555555';
 
+  const renderSidebarNav = (isDrawer: boolean) => (
+    <div className="flex flex-col h-full select-none">
+      {/* Header Drawer / Sidebar Mengikuti Warna Tema Studio */}
+      <div className="p-5 shrink-0" style={navBackgroundComputed}>
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="font-bold text-white truncate max-w-[200px]" style={{ fontSize: '20px' }}>
+              {owner.namaBrand || "Kafela's Agenda"}
+            </h2>
+            <p className="mt-0.5 text-xs text-white/80 truncate max-w-[200px]">
+              {owner.jenisUsaha || "Manajemen Jadwal & Kasir"}
+            </p>
+          </div>
+          {isDrawer && (
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(false)}
+              className="p-1 rounded-lg text-white/70 hover:text-white cursor-pointer"
+              title="Tutup Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+        <div className="mt-2.5 space-y-1 bg-black/20 p-2.5 rounded-xl border border-white/10">
+          <p className="text-[11px] text-slate-300">Masuk sebagai:</p>
+          <div className="flex items-center justify-between">
+            <span className="font-extrabold text-sm text-white flex items-center gap-1.5">
+              👤 {activeUserName}
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40">
+              {userRole === 'owner' ? 'Owner' : userRole === 'admin' ? 'Admin' : 'Crew'}
+            </span>
+          </div>
+        </div>
+
+        {/* Card Status Paket (Disembunyikan untuk Anggota / Crew) */}
+        {!isKruAnggota && (
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isDrawer) setDrawerOpen(false);
+              setLanggananModalOpen(true);
+            }}
+            className="mt-3.5 rounded-[12px] p-3 border border-white/20 cursor-pointer hover:border-amber-400 hover:bg-white/10 active:scale-[0.98] transition-all shadow-md group relative"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)' }}
+            title="Klik untuk lihat pilihan paket & perpanjang langganan"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold flex items-center gap-1.5" style={{ fontSize: '12px', color: '#2ECC71' }}>
+                PAKET AKTIF: {owner.paketAktif.toUpperCase()}
+              </span>
+              <span
+                className="font-bold px-2 py-0.5 rounded text-white"
+                style={{ fontSize: '10px', backgroundColor: '#F39C12' }}
+              >
+                AKTIF
+              </span>
+            </div>
+            <div className="mt-1.5 flex items-center justify-between text-xs">
+              <span style={{ fontSize: '11px', color: '#ECF0F1' }}>
+                Masa aktif: Sisa {sisaHariLangganan} Hari
+              </span>
+              <span className="text-[10px] font-black text-amber-300 group-hover:text-amber-200 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-400/40">
+                Perpanjang Paket →
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Daftar Menu */}
+      <div className="flex-1 p-3 space-y-1 text-sm overflow-y-auto">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('KALENDER');
+            if (isDrawer) setDrawerOpen(false);
+            bumpCacheHit();
+          }}
+          className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
+            activeTab === 'KALENDER'
+              ? 'text-white'
+              : 'text-[#DDDDDD] hover:bg-white/5'
+          }`}
+          style={getNavActiveItemStyle(activeTab === 'KALENDER')}
+        >
+          <CalendarIcon className="w-4 h-4 shrink-0" />
+          <span>Kalender &amp; Daftar Jadwal</span>
+        </button>
+
+        {!isKruAnggota && (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                if (isDrawer) setDrawerOpen(false);
+                setEditingJadwal(null);
+                setFormModalMode('KASIR_CEPAT');
+              }}
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-[#2ECC71] hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              <Zap className="w-4 h-4 shrink-0" />
+              <span>Kasir Cepat</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isDrawer) setDrawerOpen(false);
+                setEditingJadwal(null);
+                setFormModalMode('TAMBAH_AGENDA');
+              }}
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-[#64B5F6] hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>Tambah Jadwal Booking</span>
+            </button>
+
+            <div className="my-2 border-t border-white/10" />
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('PAKET');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'PAKET'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'PAKET')}
+            >
+              <Layers className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Paket Layanan</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('LAPORAN');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'LAPORAN'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'LAPORAN')}
+            >
+              <BarChart3 className="w-4 h-4 shrink-0" />
+              <span>Laporan Keuangan &amp; Piutang</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('ARSIP');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'ARSIP'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'ARSIP')}
+            >
+              <Archive className="w-4 h-4 shrink-0" />
+              <span>Gudang Arsip &amp; Pencarian</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('TIM');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'TIM'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'TIM')}
+            >
+              <Users className="w-4 h-4 shrink-0" />
+              <span>Kelola Tim &amp; Crew</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isDrawer) setDrawerOpen(false);
+                setTemaModalOpen(true);
+              }}
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-[#DDDDDD] hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              <Palette className="w-4 h-4 text-[#F39C12] shrink-0" />
+              <span>Ganti Tema &amp; Wallpaper</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPengaturanSubTab('PROFIL');
+                setActiveTab('PENGATURAN');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'PENGATURAN' && pengaturanSubTab === 'PROFIL'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'PROFIL')}
+            >
+              <Building2 className="w-4 h-4 text-sky-400 shrink-0" />
+              <span>Profil &amp; Struk</span>
+            </button>
+
+            <div className="my-1 border-t border-white/10" />
+            <p className="px-3.5 py-1 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+              Pengaturan &amp; Website
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPengaturanSubTab('WEB');
+                setActiveTab('PENGATURAN');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'PENGATURAN' && textPrimaryColor && pengaturanSubTab === 'WEB'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'WEB')}
+            >
+              <Globe className="w-4 h-4 text-purple-400 shrink-0" />
+              <span>Website &amp; Link Booking</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPengaturanSubTab('WA');
+                setActiveTab('PENGATURAN');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'PENGATURAN' && pengaturanSubTab === 'WA'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'WA')}
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Template WhatsApp</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPengaturanSubTab('PAKET');
+                setActiveTab('PENGATURAN');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'PENGATURAN' && pengaturanSubTab === 'PAKET'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'PAKET')}
+            >
+              <Layers className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Paket Pro (Upgrade)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPengaturanSubTab('REKENING');
+                setActiveTab('PENGATURAN');
+                if (isDrawer) setDrawerOpen(false);
+                bumpCacheHit();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
+                activeTab === 'PENGATURAN' && pengaturanSubTab === 'REKENING'
+                  ? 'text-white'
+                  : 'text-[#DDDDDD] hover:bg-white/5'
+              }`}
+              style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'REKENING')}
+            >
+              <CreditCard className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span>Rekening &amp; QRIS</span>
+            </button>
+          </>
+        )}
+
+        <div className="my-2 border-t border-white/10" />
+
+        <div className="px-2 py-1 space-y-2">
+          <PWAInstallButton />
+        </div>
+      </div>
+
+      {/* Footer Logout */}
+      <div className="p-3 border-t border-white/10 mt-auto shrink-0">
+        <button
+          type="button"
+          onClick={async () => {
+            if (isDrawer) setDrawerOpen(false);
+            if (sessionMode === 'FIREBASE') {
+              await logoutFirebaseSession();
+            }
+            localStorage.removeItem(LOCAL_CACHE_KEY);
+            setSessionMode(null);
+          }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-white cursor-pointer hover:opacity-95 active:scale-[0.98] transition-all shadow-md"
+          style={{ backgroundColor: '#C0392B' }}
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span>Keluar Akun</span>
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -1416,17 +1755,23 @@ export default function App() {
           className={
             isMobileLayout
               ? 'px-3.5 py-2 flex items-center justify-between gap-2 border-b border-white/10 sticky top-0 z-30 transition-all duration-200'
-              : 'px-6 py-3 flex items-center justify-between gap-4 border-b border-white/10 sticky top-0 z-30 shadow-md transition-all duration-200'
+              : 'px-6 py-2.5 min-h-[64px] flex items-center justify-between gap-4 border-b border-white/10 sticky top-0 z-30 shadow-md transition-all duration-200'
           }
           style={navBackgroundComputed}
         >
-          {/* Kiri: Tombol Drawer (PC & HP) + Judul Kafela's Agenda */}
+          {/* Kiri: Tombol Drawer / Sidebar (PC & HP) + Judul Kafela's Agenda */}
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => setDrawerOpen(true)}
+              onClick={() => {
+                if (isMobileLayout) {
+                  setDrawerOpen(true);
+                } else {
+                  setDesktopSidebarOpen((prev) => !prev);
+                }
+              }}
               className="p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-              title="Buka Menu Navigasi"
+              title="Buka / Tutup Menu Navigasi"
             >
               <Menu className="w-6 h-6 text-white" />
             </button>
@@ -1599,330 +1944,10 @@ export default function App() {
             onClick={() => setDrawerOpen(false)}
           />
           <aside
-            className="relative w-[300px] max-w-[85vw] h-full flex flex-col shadow-2xl z-10 overflow-y-auto"
-            style={{ backgroundColor: '#121212', color: '#FFFFFF' }} // Could be derived from theme
+            className="relative w-[300px] max-w-[85vw] h-full flex flex-col shadow-2xl z-10 overflow-hidden"
+            style={{ backgroundColor: '#121212', color: '#FFFFFF' }}
           >
-            {/* Header Drawer Mengikuti Warna Tema Studio */}
-            <div className="p-5" style={navBackgroundComputed}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="font-bold text-white truncate max-w-[200px]" style={{ fontSize: '20px' }}>
-                    {owner.namaBrand || "Kafela's Agenda"}
-                  </h2>
-                  <p className="mt-0.5 text-xs text-white/80 truncate max-w-[200px]">
-                    {owner.jenisUsaha || "Manajemen Jadwal & Kasir"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setDrawerOpen(false)}
-                  className="p-1 rounded-lg text-white/70 hover:text-white cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="mt-2.5 space-y-1 bg-black/20 p-2.5 rounded-xl border border-white/10">
-                <p className="text-[11px] text-slate-300">Masuk sebagai:</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-sm text-white flex items-center gap-1.5">
-                    👤 {activeUserName}
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                    {userRole === 'owner' ? 'Owner' : userRole === 'admin' ? 'Admin' : 'Crew'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Card Status Paket (Disembunyikan untuk Anggota / Crew) */}
-              {!isKruAnggota && (
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDrawerOpen(false);
-                    setLanggananModalOpen(true);
-                  }}
-                  className="mt-3.5 rounded-[12px] p-3 border border-white/20 cursor-pointer hover:border-amber-400 hover:bg-white/10 active:scale-[0.98] transition-all shadow-md group relative"
-                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)' }}
-                  title="Klik untuk lihat pilihan paket & perpanjang langganan"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold flex items-center gap-1.5" style={{ fontSize: '12px', color: '#2ECC71' }}>
-                      PAKET AKTIF: {owner.paketAktif.toUpperCase()}
-                    </span>
-                    <span
-                      className="font-bold px-2 py-0.5 rounded text-white"
-                      style={{ fontSize: '10px', backgroundColor: '#F39C12' }}
-                    >
-                      AKTIF
-                    </span>
-                  </div>
-                  <div className="mt-1.5 flex items-center justify-between text-xs">
-                    <span style={{ fontSize: '11px', color: '#ECF0F1' }}>
-                      Masa aktif: Sisa {sisaHariLangganan} Hari
-                    </span>
-                    <span className="text-[10px] font-black text-amber-300 group-hover:text-amber-200 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-400/40">
-                      Perpanjang Paket →
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Daftar Menu Drawer APK */}
-            <div className="flex-1 p-3 space-y-1 text-sm">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('KALENDER');
-                  setDrawerOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
-                  activeTab === 'KALENDER'
-                    ? 'text-white'
-                    : 'text-[#DDDDDD] hover:bg-white/5'
-                }`}
-                style={getNavActiveItemStyle(activeTab === 'KALENDER')}
-              >
-                <CalendarIcon className="w-4 h-4" />
-                <span>Kalender &amp; Daftar Jadwal</span>
-              </button>
-
-              {!isKruAnggota && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDrawerOpen(false);
-                      setEditingJadwal(null);
-                      setFormModalMode('KASIR_CEPAT');
-                    }}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-[#2ECC71] hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <Zap className="w-4 h-4" />
-                    <span>Kasir Cepat</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDrawerOpen(false);
-                      setEditingJadwal(null);
-                      setFormModalMode('TAMBAH_AGENDA');
-                    }}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-[#64B5F6] hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Tambah Jadwal Booking</span>
-                  </button>
-
-                  <div className="my-2 border-t border-white/10" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('PAKET');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PAKET'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PAKET')}
-                  >
-                    <Layers className="w-4 h-4 text-amber-400" />
-                    <span>Paket Pro / Layanan</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('LAPORAN');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'LAPORAN'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'LAPORAN')}
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                    <span>Laporan Keuangan &amp; Piutang</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('ARSIP');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'ARSIP'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'ARSIP')}
-                  >
-                    <Archive className="w-4 h-4" />
-                    <span>Gudang Arsip &amp; Pencarian</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('TIM');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'TIM'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'TIM')}
-                  >
-                    <Users className="w-4 h-4" />
-                    <span>Kelola Tim &amp; Crew</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDrawerOpen(false);
-                      setTemaModalOpen(true);
-                    }}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-[#DDDDDD] hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <Palette className="w-4 h-4 text-[#F39C12]" />
-                    <span>Ganti Tema &amp; Wallpaper</span>
-                  </button>
-
-                      <button
-                    type="button"
-                    onClick={() => {
-                      setPengaturanSubTab('PROFIL');
-                      setActiveTab('PENGATURAN');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PENGATURAN' && pengaturanSubTab === 'PROFIL'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'PROFIL')}
-                  >
-                    <Building2 className="w-4 h-4 text-sky-400" />
-                    <span>Profil &amp; Struk</span>
-                  </button>
-
-                  <div className="my-1 border-t border-white/10" />
-                  <p className="px-3.5 py-1 text-[10px] font-bold text-amber-400 uppercase tracking-wider">Pengaturan &amp; Website</p>
-
-                    <button
-                    type="button"
-                    onClick={() => {
-                      setPengaturanSubTab('WEB');
-                      setActiveTab('PENGATURAN');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PENGATURAN' && pengaturanSubTab === 'WEB'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'WEB')}
-                  >
-                    <Globe className="w-4 h-4 text-purple-400" />
-                    <span>Website &amp; Link Booking</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPengaturanSubTab('WA');
-                      setActiveTab('PENGATURAN');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PENGATURAN' && pengaturanSubTab === 'WA'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'WA')}
-                  >
-                    <MessageCircle className="w-4 h-4 text-emerald-400" />
-                    <span>Template WhatsApp</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPengaturanSubTab('PAKET');
-                      setActiveTab('PENGATURAN');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PENGATURAN' && pengaturanSubTab === 'PAKET'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'PAKET')}
-                  >
-                    <Layers className="w-4 h-4 text-amber-400" />
-                    <span>Paket Pro (Upgrade)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPengaturanSubTab('REKENING');
-                      setActiveTab('PENGATURAN');
-                      setDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PENGATURAN' && pengaturanSubTab === 'REKENING'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'REKENING')}
-                  >
-                    <CreditCard className="w-4 h-4 text-cyan-400" />
-                    <span>Rekening &amp; QRIS</span>
-                  </button>
-
-            
-                </>
-              )}
-
-              <div className="my-2 border-t border-white/10" />
-
-              <div className="px-2 py-1 space-y-2">
-                <PWAInstallButton />
-              </div>
-            </div>
-
-            {/* Footer Logout */}
-            <div className="p-3 border-t border-white/10">
-              <button
-                type="button"
-                onClick={async () => {
-                  setDrawerOpen(false);
-                  if (sessionMode === 'FIREBASE') {
-                    await logoutFirebaseSession();
-                  }
-                  localStorage.removeItem(LOCAL_CACHE_KEY);
-                  setSessionMode(null);
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-white cursor-pointer"
-                style={{ backgroundColor: '#C0392B' }}
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Keluar Akun</span>
-              </button>
-            </div>
+            {renderSidebarNav(true)}
           </aside>
         </div>
       )}
@@ -1933,229 +1958,13 @@ export default function App() {
       {/* - DI WEB PC: Menu Samping (Sidebar Kiri) Muncul Langsung + Konten     */}
       {/* ===================================================================== */}
       <div className="flex-1 flex w-full">
-        {/* MENU SAMPING PERMANEN KHUSUS TAMPILAN WEB PC */}
-        {!isMobileLayout && (
+        {/* MENU SAMPING PERMANEN KHUSUS TAMPILAN WEB PC (MENGIKUTI SIDEBAR HP) */}
+        {!isMobileLayout && desktopSidebarOpen && (
           <aside
-            className="w-[260px] shrink-0 flex flex-col border-r border-white/10 shadow-xl sticky top-[53px] h-[calc(100vh-53px)] overflow-y-auto transition-all duration-200"
-            style={navBackgroundComputed}
+            className="w-[300px] shrink-0 flex flex-col border-r border-white/10 shadow-2xl sticky top-[64px] h-[calc(100vh-64px)] overflow-hidden transition-all duration-200 z-20"
+            style={{ backgroundColor: '#121212', color: '#FFFFFF' }}
           >
-            {/* Ringkasan Paket Aktif di Menu Samping PC (Disembunyikan untuk Anggota / Crew) */}
-            {!isKruAnggota && (
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => setLanggananModalOpen(true)}
-                className="p-3.5 border-b border-white/10 cursor-pointer hover:bg-white/10 active:scale-[0.98] transition-all group"
-                style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
-                title="Klik untuk lihat pilihan paket & perpanjang langganan"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-[11px] text-[#2ECC71]">
-                    PAKET: {owner.paketAktif.toUpperCase()}
-                  </span>
-                  <span
-                    className="font-bold px-2 py-0.5 rounded text-white text-[10px]"
-                    style={{ backgroundColor: '#F39C12' }}
-                  >
-                    Sisa {sisaHariLangganan} Hari
-                  </span>
-                </div>
-                <div className="mt-1.5 flex items-center justify-between text-[10px] text-amber-300 font-bold">
-                  <span>Pilihan Paket Langganan</span>
-                  <span className="inline-flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-400/40 text-amber-300 group-hover:text-amber-200">
-                    Perpanjang →
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Daftar Menu Samping PC */}
-            <div className="flex-1 p-2.5 space-y-1 text-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('KALENDER');
-                  bumpCacheHit();
-                }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                  activeTab === 'KALENDER'
-                    ? 'text-white'
-                    : 'text-[#DDDDDD] hover:bg-white/5'
-                }`}
-                style={getNavActiveItemStyle(activeTab === 'KALENDER')}
-              >
-                <CalendarIcon className="w-4 h-4 shrink-0" />
-                <span>Kalender &amp; Jadwal</span>
-              </button>
-
-              {!isKruAnggota && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingJadwal(null);
-                      setFormModalMode('KASIR_CEPAT');
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-[#2ECC71] hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <Zap className="w-4 h-4 shrink-0" />
-                    <span>Kasir Cepat</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingJadwal(null);
-                      setFormModalMode('TAMBAH_AGENDA');
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-[#64B5F6] hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4 shrink-0" />
-                    <span>Tambah Jadwal Booking</span>
-                  </button>
-
-                  <div className="my-1.5 border-t border-white/10" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('PAKET');
-                      bumpCacheHit();
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PAKET'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PAKET')}
-                  >
-                    <Layers className="w-4 h-4 shrink-0" />
-                    <span>Paket Layanan</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('LAPORAN');
-                      bumpCacheHit();
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'LAPORAN'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'LAPORAN')}
-                  >
-                    <BarChart3 className="w-4 h-4 shrink-0" />
-                    <span>Laporan Keuangan &amp; Piutang</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('ARSIP');
-                      bumpCacheHit();
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'ARSIP'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'ARSIP')}
-                  >
-                    <Archive className="w-4 h-4 shrink-0" />
-                    <span>Gudang Arsip &amp; Pencarian</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('TIM');
-                      bumpCacheHit();
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'TIM'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'TIM')}
-                  >
-                    <Users className="w-4 h-4 shrink-0" />
-                    <span>Kelola Tim &amp; Crew</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setTemaModalOpen(true)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-[#DDDDDD] hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <Palette className="w-4 h-4 text-[#F39C12] shrink-0" />
-                    <span>Ganti Tema &amp; Wallpaper</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPengaturanSubTab('WEB');
-                      setActiveTab('PENGATURAN');
-                      bumpCacheHit();
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PENGATURAN' && textPrimaryColor && pengaturanSubTab === 'WEB'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'WEB')}
-                  >
-                    <Globe className="w-4 h-4 text-purple-400 shrink-0" />
-                    <span>Atur Website &amp; Link Booking</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPengaturanSubTab('PROFIL');
-                      setActiveTab('PENGATURAN');
-                      bumpCacheHit();
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      activeTab === 'PENGATURAN' && pengaturanSubTab !== 'WEB'
-                        ? 'text-white'
-                        : 'text-[#DDDDDD] hover:bg-white/5'
-                    }`}
-                    style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab !== 'WEB')}
-                  >
-                    <Settings className="w-4 h-4 shrink-0" />
-                    <span>Pengaturan &amp; Rekening</span>
-                  </button>
-                </>
-              )}
-
-              <div className="my-1.5 border-t border-white/10" />
-
-              <div className="px-1 py-1 space-y-2">
-                <PWAInstallButton />
-              </div>
-            </div>
-
-            {/* Footer Logout Menu Samping PC */}
-            <div className="p-2.5 border-t border-white/10">
-              <button
-                type="button"
-                onClick={async () => {
-                  if (sessionMode === 'FIREBASE') {
-                    await logoutFirebaseSession();
-                  }
-                  localStorage.removeItem(LOCAL_CACHE_KEY);
-                  setSessionMode(null);
-                }}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-white cursor-pointer"
-                style={{ backgroundColor: '#C0392B' }}
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Keluar Akun</span>
-              </button>
-            </div>
+            {renderSidebarNav(false)}
           </aside>
         )}
 
@@ -2999,6 +2808,19 @@ export default function App() {
                               {item.lokasi || 'Studio'}
                             </p>
 
+                            {/* Catatan di Bawah Alamat */}
+                            {Boolean(item.catatan && item.catatan.trim()) && (
+                              <p
+                                className="mt-1 leading-snug flex items-start gap-1.5"
+                                style={{
+                                  fontSize: isMobileLayout ? '11px' : '12px',
+                                  color: isKacaGelap ? '#FDE047' : '#B45309',
+                                }}
+                              >
+                                <span className="italic font-medium">{item.catatan}</span>
+                              </p>
+                            )}
+
                             {/* Garis Pemisah & Baris Harga */}
                             {!isKruAnggota && (
                               <>
@@ -3330,24 +3152,13 @@ export default function App() {
 
                   {aksiJadwalTarget.catatan && (
                     <div className="p-2.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700">
-                      <span className="font-bold">📝 Catatan Acara:</span> {aksiJadwalTarget.catatan}
+                      <span className="font-bold">Catatan: </span> {aksiJadwalTarget.catatan}
                     </div>
                   )}
                 </div>
 
                 <div className="pt-2 space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const target = aksiJadwalTarget;
-                      setAksiJadwalTarget(null);
-                      setWaChoiceTarget(target);
-                    }}
-                    className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer text-white bg-[#1E88E5] hover:opacity-95 shadow"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Hubungi Klien / PIC via WhatsApp</span>
-                  </button>
+    
                   <button
                     type="button"
                     onClick={() => setAksiJadwalTarget(null)}
@@ -3372,20 +3183,7 @@ export default function App() {
                   {aksiJadwalTarget.namaAcara} - {aksiJadwalTarget.namaKlien}
                 </p>
 
-                {/* Hubungi Klien via WhatsApp (#E3F2FD / #1E88E5) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const target = aksiJadwalTarget;
-                    setAksiJadwalTarget(null);
-                    setWaChoiceTarget(target);
-                  }}
-                  className="w-full py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: '#E3F2FD', color: '#1E88E5' }}
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Hubungi Klien via WhatsApp</span>
-                </button>
+           
 
                 {/* Lihat / Cetak Struk (Nota) */}
                 <button
@@ -3402,34 +3200,42 @@ export default function App() {
                   <span>Lihat / Cetak Struk (Nota)</span>
                 </button>
 
-                {/* Tandai Lunas (#27AE60) */}
-                <button
-                  type="button"
-                  onClick={() => handleTandaiLunas(aksiJadwalTarget)}
-                  className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-95"
-                  style={{ backgroundColor: '#27AE60' }}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Tandai Lunas</span>
-                </button>
+<div className="flex flex-row items-center gap-3">
+  {/* Pembayaran Selanjutnya */}
 
-                {/* Pembayaran Ke-2 atau Selanjutnya (Pengganti Atur Nominal DP) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const target = aksiJadwalTarget;
-                    setAksiJadwalTarget(null);
-                    setDpModalTarget(target);
-                    setDpModalInputStr('');
-                  }}
-                  className="w-full py-3 px-4 rounded-xl font-bold text-sm border cursor-pointer hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
-                  style={{ borderColor: '#F39C12', color: '#D35400', backgroundColor: '#FEF9E7' }}
-                >
-                  <CreditCard className="w-4 h-4 text-[#F39C12]" />
-                  <span>Pembayaran Selanjutnya</span>
-                </button>
+  <button
+    type="button"
+    onClick={() => {
+      const target = aksiJadwalTarget;
+      setAksiJadwalTarget(null);
+      setDpModalTarget(target);
+      setDpModalInputStr('');
+    }}
+    className="flex-1 min-w-0 py-3 px-2 rounded-xl font-bold text-sm border cursor-pointer hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+    style={{
+      borderColor: '#F39C12',
+      color: '#D35400',
+      backgroundColor: '#FEF9E7'
+    }}
+  >
+    <CreditCard className="w-4 h-4 shrink-0" />
+    <span className="text-center"> + Pembayaran</span>
+  </button>
+  {/* Tandai Lunas */}
+  <button
+    type="button"
+    onClick={() => handleTandaiLunas(aksiJadwalTarget)}
+    className="flex-1 min-w-0 py-3 px-2 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-95"
+    style={{ backgroundColor: '#27AE60' }}
+  >
+    <CheckCircle2 className="w-4 h-4 shrink-0" />
+    <span>Tandai Lunas</span>
+  </button>
 
-                {/* Edit Data Jadwal */}
+
+</div>
+
+                {/* Edit Data Event */}
                 <button
                   type="button"
                   onClick={() => {
@@ -3442,29 +3248,47 @@ export default function App() {
                   style={{ borderColor: '#BDC3C7', color: '#2C3E50' }}
                 >
                   <Edit3 className="w-4 h-4" />
-                  <span>Edit Data Jadwal</span>
+                  <span>Edit Data Event</span>
                 </button>
 
-                {/* Batalkan Jadwal (#FFEBEE / #D32F2F) */}
+                     {/* Hubungi Klien via WhatsApp (#E3F2FD / #1E88E5) */}
                 <button
                   type="button"
-                  onClick={() => handleBatalkanJadwal(aksiJadwalTarget)}
-                  className="w-full py-3 px-4 rounded-xl font-bold text-sm cursor-pointer transition-opacity hover:opacity-90 mt-2"
-                  style={{ backgroundColor: '#FFEBEE', color: '#D32F2F' }}
+                  onClick={() => {
+                    const target = aksiJadwalTarget;
+                    setAksiJadwalTarget(null);
+                    setWaChoiceTarget(target);
+                  }}
+                  className="w-full py-3 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: '#E3F2FD', color: '#1E88E5' }}
                 >
-                  Batalkan Jadwal
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Hubungi Klien via WhatsApp</span>
                 </button>
 
-                {/* Hapus Permanen */}
-                <button
-                  type="button"
-                  onClick={() => handleDeleteJadwal(aksiJadwalTarget.idJadwal)}
-                  className="w-full py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 cursor-pointer hover:bg-red-50"
-                  style={{ color: '#D32F2F' }}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Hapus Permanen</span>
-                </button>
+<div className="flex flex-row items-center gap-3 mt-2">
+  {/* Batalkan Jadwal */}
+  <button
+    type="button"
+    onClick={() => handleBatalkanJadwal(aksiJadwalTarget)}
+    className="flex-1 py-3 px-4 rounded-xl font-bold text-sm cursor-pointer transition-opacity hover:opacity-90"
+    style={{ backgroundColor: '#FFEBEE', color: '#D32F2F' }}
+  >
+    Batalkan
+  </button>
+
+  {/* Hapus Permanen */}
+  <button
+    type="button"
+    onClick={() => handleDeleteJadwal(aksiJadwalTarget.idJadwal)}
+    className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 cursor-pointer hover:bg-red-50"
+    style={{ color: '#D32F2F' }}
+  >
+    <Trash2 className="w-4 h-4 shrink-0" />
+    <span>Hapus</span>
+  </button>
+</div>
+
               </>
             )}
           </div>

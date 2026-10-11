@@ -589,7 +589,7 @@ export const MasterPaketView: React.FC<{
               Urutan paket di sini otomatis tampil di Kasir PC, Aplikasi HP, dan Form Website
             </p>
           </div>
-          <span className="text-xs font-mono text-sky-400">{paketList.length} Paket</span>
+          <span className="text-xs font-mono text-sky-400">{paketList.length} Layanan</span>
         </div>
 
         <div className="divide-y divide-slate-800">
@@ -629,24 +629,24 @@ export const MasterPaketView: React.FC<{
                   )}
                 </div>
               </div>
+<div className="flex flex-col items-center gap-1.5 shrink-0">
+  <button
+    type="button"
+    onClick={() => startEdit(item)}
+    className="w-full px-2.5 py-1 rounded-lg border border-sky-500/50 text-sky-300 hover:bg-sky-500/10 text-xs font-semibold cursor-pointer text-center"
+  >
+    Ubah
+  </button>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => startEdit(item)}
-                  className="px-3 py-1.5 rounded-lg border border-sky-500/50 text-sky-300 hover:bg-sky-500/10 text-xs font-semibold cursor-pointer"
-                >
-                  Ubah
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDeletePaket(item.idPaket)}
-                  className="p-1.5 rounded-lg border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-                  title="Hapus Paket"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+  <button
+    type="button"
+    onClick={() => onDeletePaket(item.idPaket)}
+    className="w-full flex items-center justify-center p-1.5 rounded-lg border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+    title="Hapus Paket"
+  >
+    <Trash2 className="w-3.5 h-3.5" />
+  </button>
+</div>
             </div>
           ))}
         </div>

@@ -502,6 +502,112 @@ const noStruk = jadwal.idJadwal || 'INV001';
   const handleWebBluetoothPrint = async () => {
     setShowRawBtFallback(false);
 
+    // 1. Cek apakah dibuka di dalam aplikasi Android APK (WebView dengan interface "MesinPrint" atau "WebAppInterface")
+    const win = window as any;
+    const bridge = win.MesinPrint || win.WebAppInterface;
+
+    if (bridge && (typeof bridge.prosesCetakBluetooth === 'function' || typeof bridge.cetakStrukDariWeb === 'function')) {
+      try {
+        setBtStatus('Mengirim data & gambar ke printer Bluetooth APK...');
+
+        // Konversi logo dan tanda tangan ke format Base64 yang aman
+        let logoB64 = '';
+        let ttdB64 = '';
+
+        if (adaLogo && finalLogoUrl) {
+          logoB64 = await ensureSafeDataUrl(finalLogoUrl);
+        }
+        if (adaTtd && finalTtdUrl) {
+          ttdB64 = await ensureSafeDataUrl(finalTtdUrl);
+        }
+
+        const brandName = owner.namaBrand || "Kafela's Agenda";
+        const adminKasir = adminName || owner.namaOwner || 'Admin Studio';
+        const metode = rekening?.bankUtama ? `Transfer ${rekening.bankUtama}` : 'Tunai / Cash';
+        const isArsip = Boolean(jadwal.isFromArchive);
+
+        if (typeof bridge.prosesCetakBluetooth === 'function') {
+          // Panggil antarmuka lengkap dengan Logo dan Tanda Tangan Base64
+          try {
+            bridge.prosesCetakBluetooth(
+              jadwal.namaAcara || '-',
+              jadwal.namaKlien || '-',
+              jadwal.paket || '-',
+              hargaPaketDasar,
+              jadwal.namaTambahan || '',
+              hargaTambahan,
+              jadwal.lokasi || 'Studio',
+              tanggalBayar,
+              jadwal.waktuMulai || 0,
+              totalTarif,
+              nominalDibayar,
+              diskon,
+              dpDibayar,
+              isLunas,
+              noStruk,
+              jadwal.catatan || '',
+              metode,
+              isArsip,
+              brandName,
+              adminKasir,
+              logoB64,
+              ttdB64
+            );
+          } catch {
+            // Fallback pemanggilan format lama jika APK belum diupdate ke 22 parameter
+            bridge.prosesCetakBluetooth(
+              jadwal.namaAcara || '-',
+              jadwal.namaKlien || '-',
+              jadwal.paket || '-',
+              hargaPaketDasar,
+              jadwal.namaTambahan || '',
+              hargaTambahan,
+              jadwal.lokasi || 'Studio',
+              tanggalBayar,
+              jadwal.waktuMulai || 0,
+              totalTarif,
+              nominalDibayar,
+              diskon,
+              dpDibayar,
+              isLunas,
+              noStruk,
+              jadwal.catatan || '',
+              metode,
+              isArsip
+            );
+          }
+        } else if (typeof bridge.cetakStrukDariWeb === 'function') {
+          bridge.cetakStrukDariWeb(
+            jadwal.namaAcara || '-',
+            jadwal.namaKlien || '-',
+            jadwal.paket || '-',
+            hargaPaketDasar,
+            jadwal.namaTambahan || '',
+            hargaTambahan,
+            jadwal.lokasi || 'Studio',
+            tanggalBayar,
+            jadwal.waktuMulai || 0,
+            totalTarif,
+            nominalDibayar,
+            diskon,
+            dpDibayar,
+            isLunas,
+            noStruk,
+            jadwal.catatan || '',
+            metode,
+            isArsip
+          );
+        }
+
+        setBtStatus('✓ Data struk dan gambar berhasil dikirim ke Printer APK!');
+        setTimeout(() => setBtStatus(null), 3500);
+        return;
+      } catch (bridgeErr) {
+        console.error('Gagal mengirim ke bridge Android:', bridgeErr);
+        setBtStatus('Gagal kirim via APK. Mencoba Web Bluetooth browser...');
+      }
+    }
+
     type BleCharacteristic = {
       properties?: {
         write?: boolean;
@@ -1266,7 +1372,7 @@ const noStruk = jadwal.idJadwal || 'INV001';
                         className="flex items-center justify-center gap-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 py-2.5 px-3 text-xs font-semibold text-slate-200 cursor-pointer transition-colors"
                       >
                         <Bluetooth className="w-4 h-4 text-indigo-400 shrink-0" />
-                        <span>Bluetooth</span>
+                        <span> Print Bluetooth</span>
                       </button>
 
             <button
