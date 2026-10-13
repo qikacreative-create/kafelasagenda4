@@ -178,6 +178,7 @@ export interface OwnerProfile {
   teksTombolBooking?: string;
   isWebsiteActive?: boolean;
   isBookingActive?: boolean;
+  customLinks?: { title: string; url: string }[];
   webProfil2?: WebProfilSekunder;
   templateWaTagihan: string;
   templateWaKonfirmasi: string;

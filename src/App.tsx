@@ -76,6 +76,7 @@ import {
   saveTimToFirebase,
   subscribeLiveJadwalUltimate,
   initKafelaFirebase,
+  checkAndIncrementVisits,
 } from './services/firebaseClient';
 import { doc, getDoc } from 'firebase/firestore';
 import {
@@ -153,6 +154,19 @@ export default function App() {
     } catch {}
     return null;
   });
+
+  const [isVisitAllowed, setIsVisitAllowed] = useState<boolean | null>(null);
+
+  if (isVisitAllowed === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 p-6 text-center">
+        <div>
+          <h1 className="text-2xl font-bold text-rose-400 mb-2">Akses Terbatas</h1>
+          <p>Batas kunjungan harian Anda telah tercapai. Silakan coba lagi besok.</p>
+        </div>
+      </div>
+    );
+  }
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
   const [pengaturanSubTab, setPengaturanSubTab] = useState<PengaturanSubTab>(() => {
     try {
@@ -201,6 +215,19 @@ export default function App() {
     } catch {}
     return 'demo-owner-kafela-001';
   });
+
+  useEffect(() => {
+    async function checkVisits() {
+      // Menggunakan 'Pro' sebagai contoh paket, nanti bisa disesuaikan dengan data owner asli
+      const allowed = await checkAndIncrementVisits(targetOwnerId, 'Pro');
+      setIsVisitAllowed(allowed);
+    }
+    if (targetOwnerId && targetOwnerId !== 'demo-owner-kafela-001') {
+      checkVisits();
+    } else {
+      setIsVisitAllowed(true);
+    }
+  }, []); // Changed dependency to []
   const [userRole, setUserRole] = useState<UserRoleType>(() => {
     try {
       const raw = localStorage.getItem(LOCAL_CACHE_KEY);
@@ -1822,7 +1849,7 @@ export default function App() {
               style={getNavActiveItemStyle(activeTab === 'PENGATURAN' && pengaturanSubTab === 'PAKET')}
             >
               <Layers className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Paket Pro (Upgrade)</span>
+              <span>Paket Pro </span>
             </button>
 
             <button

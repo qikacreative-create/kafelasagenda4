@@ -181,6 +181,15 @@ export function SuperAdminDashboard({
       return;
     }
 
+    // --- PEMBATASAN MULTI-WEBSITE ---
+    const existingBrands = brands.filter(b => b.ownerId === (editingBrand ? editingBrand.ownerId : `owner-${cleanSlug}-${Date.now().toString().slice(-4)}`));
+    const limits = getLimits(formTier);
+    if (existingBrands.length >= limits.maxWebsites && !editingBrand) {
+      alert(`Klien ini berada di paket ${formTier} dan hanya diperbolehkan memiliki ${limits.maxWebsites} website. Mohon upgrade ke paket Ultimate untuk menambah website.`);
+      return;
+    }
+    // ---------------------------------
+
     const maxJadwal = formTier === 'Ultimate' ? 99999 : formTier === 'Pro' ? 300 : 75;
     const now = Date.now();
     const expiredAt =

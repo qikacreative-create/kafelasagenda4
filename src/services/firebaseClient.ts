@@ -405,12 +405,25 @@ export async function fetchOwnerWorkspaceFromFirebase(
     }
   }
 
-  const resolvedPortofolio: string[] = Array.isArray(oData.portofolioWeb)
-    ? (oData.portofolioWeb as string[]).filter((u) => u && String(u).trim() !== '').slice(0, 8)
-    : [];
-  const resolvedCaptions: string[] = Array.isArray(oData.portofolioCaptions)
-    ? (oData.portofolioCaptions as string[]).slice(0, 8)
-    : [];
+  // Baca dari sub-koleksi galeri_web jika tersedia, jika tidak fallback ke dokumen utama
+  let resolvedPortofolio: string[] = [];
+  let resolvedCaptions: string[] = [];
+  try {
+    const galeriSnap = await getDocs(collection(fb.db, 'owners', targetOwnerId, 'galeri_web'));
+    readsCount += Math.max(1, galeriSnap.size);
+    
+    if (galeriSnap.size > 0) {
+      const galeriDocs = galeriSnap.docs.sort((a, b) => Number(a.id.replace('PORTO_', '')) - Number(b.id.replace('PORTO_', '')));
+      resolvedPortofolio = galeriDocs.map(d => d.data().url as string || '');
+      resolvedCaptions = galeriDocs.map(d => d.data().caption as string || '');
+    } else if (Array.isArray(oData.portofolioWeb)) {
+      // Fallback untuk data lama
+      resolvedPortofolio = (oData.portofolioWeb as string[]).filter((u) => u && String(u).trim() !== '').slice(0, 8);
+      resolvedCaptions = Array.isArray(oData.portofolioCaptions) ? (oData.portofolioCaptions as string[]).slice(0, 8) : [];
+    }
+  } catch (e) {
+    console.warn('Gagal memuat galeri_web:', e);
+  }
 
   const owner: OwnerProfile = {
     uid: targetOwnerId,
@@ -851,26 +864,34 @@ export async function saveOwnerProfileToFirebase(
     cleanUpdates.username = cleanUpdates.username.trim().replace(/\s+/g, '');
   }
 
-  // Simpan hingga 8 foto galeri + judul foto langsung di dokumen utama owners/{targetOwnerId}
-  // Cukup 1 Write saja (sangat irit kuota & 100% di bawah batas 1MB Firestore)
+  // Simpan foto galeri ke sub-koleksi galeri_web dan hapus dari dokumen utama
   if (Array.isArray(updates.portofolioWeb)) {
     const rawPhotos = updates.portofolioWeb.slice(0, 8);
     const rawCaptions = Array.isArray(updates.portofolioCaptions)
       ? updates.portofolioCaptions.slice(0, 8)
       : [];
-    const validPhotos: string[] = [];
-    const validCaptions: string[] = [];
-
-    for (let idx = 0; idx < rawPhotos.length; idx++) {
+    
+    // Simpan ke sub-koleksi galeri_web
+    for (let idx = 0; idx < 8; idx++) {
       const u = (rawPhotos[idx] || '').trim();
+      const cap = (rawCaptions[idx] || '').trim();
+      const slotId = `PORTO_${idx + 1}`;
+      
       if (u !== '') {
-        validPhotos.push(u);
-        validCaptions.push((rawCaptions[idx] || '').trim());
+        await setDoc(doc(fb.db, 'owners', targetOwnerId, 'galeri_web', slotId), {
+          url: u,
+          caption: cap,
+        });
+      } else {
+        // Hapus slot jika kosong
+        try {
+          await deleteDoc(doc(fb.db, 'owners', targetOwnerId, 'galeri_web', slotId));
+        } catch {}
       }
     }
-
-    cleanUpdates.portofolioWeb = validPhotos;
-    cleanUpdates.portofolioCaptions = validCaptions;
+    // Hapus field lama dari dokumen utama
+    delete cleanUpdates.portofolioWeb;
+    delete cleanUpdates.portofolioCaptions;
   }
 
   await setDoc(doc(fb.db, 'owners', targetOwnerId), cleanUpdates, { merge: true });
@@ -965,6 +986,78 @@ export async function saveTimToFirebase(
 
   await setDoc(doc(fb.db, 'owners', targetOwnerId, 'tim', userUid), payload, { merge: true });
   await setDoc(doc(fb.db, 'tim_studio', userUid), payload, { merge: true });
+}
+
+/**
+ * Validasi dan increment limit aktivitas harian (setings + foto)
+ * Return true jika diizinkan, false jika diblokir
+ */
+export async function checkAndIncrementActions(
+  targetOwnerId: string,
+  paketAktif: string
+): Promise<boolean> {
+  const fb = initKafelaFirebase();
+  if (!fb) return false;
+
+  const ownerRef = doc(fb.db, 'owners', targetOwnerId);
+  const snap = await getDoc(ownerRef);
+  if (!snap.exists()) return false;
+  
+  const data = snap.data();
+  const limits = getLimits(paketAktif);
+  
+  const lastReset = data.lastResetDate as number || 0;
+  const now = Date.now();
+  const isToday = new Date(lastReset).toDateString() === new Date(now).toDateString();
+  
+  let currentActions = isToday ? (data.actionsToday as number || 0) : 0;
+  
+  if (currentActions >= limits.maxDailyActions) {
+    return false;
+  }
+  
+  await updateDoc(ownerRef, {
+    actionsToday: currentActions + 1,
+    lastResetDate: isToday ? lastReset : now
+  });
+  
+  return true;
+}
+
+/**
+ * Validasi dan increment limit kunjungan harian (mencegah bot/abuse)
+ * Return true jika diizinkan, false jika diblokir
+ */
+export async function checkAndIncrementVisits(
+  targetOwnerId: string,
+  paketAktif: string
+): Promise<boolean> {
+  const fb = initKafelaFirebase();
+  if (!fb) return true; // Fail-safe: jika firebase gagal, tetap izinkan
+
+  const ownerRef = doc(fb.db, 'owners', targetOwnerId);
+  const snap = await getDoc(ownerRef);
+  if (!snap.exists()) return true;
+  
+  const data = snap.data();
+  const limits = getLimits(paketAktif);
+  
+  const lastReset = data.lastResetDate as number || 0;
+  const now = Date.now();
+  const isToday = new Date(lastReset).toDateString() === new Date(now).toDateString();
+  
+  let currentVisits = isToday ? (data.visitsToday as number || 0) : 0;
+  
+  if (currentVisits >= limits.maxDailyVisits) {
+    return false;
+  }
+  
+  await updateDoc(ownerRef, {
+    visitsToday: currentVisits + 1,
+    lastResetDate: isToday ? lastReset : now
+  });
+  
+  return true;
 }
 
 export async function deleteTimFromFirebase(
@@ -1444,36 +1537,6 @@ export const SEED_BRANDS_REGISTRY: BrandRegistryItem[] = [
     createdAt: Date.now() - 11 * 86400000,
     expiredAt: Date.now() + 49 * 86400000,
     catatan: 'Wedding Band & Singer Solo',
-  },
-  {
-    id: 'gemilangtenda',
-    slug: 'gemilangtenda',
-    namaBrand: 'Gemilang Tenda & Dekorasi',
-    ownerId: 'owner-gemilang-028',
-    ownerEmail: 'gemilang@tenda.id',
-    ownerWhatsApp: '081299001122',
-    customDomain: 'gemilangtenda.web.app',
-    tier: 'Pro',
-    status: 'AKTIF',
-    maxJadwal: 300,
-    createdAt: Date.now() - 30 * 86400000,
-    expiredAt: Date.now() + 335 * 86400000,
-    catatan: 'Sewa Tenda, Panggung, Kursi & Dekorasi Pesta',
-  },
-  {
-    id: 'gemilang-tenda',
-    slug: 'gemilang-tenda',
-    namaBrand: 'Gemilang Tenda & Dekorasi',
-    ownerId: 'owner-gemilang-028',
-    ownerEmail: 'gemilang@tenda.id',
-    ownerWhatsApp: '081299001122',
-    customDomain: 'gemilangtenda.web.app',
-    tier: 'Pro',
-    status: 'AKTIF',
-    maxJadwal: 300,
-    createdAt: Date.now() - 30 * 86400000,
-    expiredAt: Date.now() + 335 * 86400000,
-    catatan: 'Sewa Tenda, Panggung, Kursi & Dekorasi Pesta',
   },
   {
     id: 'royal-heritage',

@@ -8,6 +8,9 @@ export type SubscriptionLimits = {
   canAccessBookingLink: boolean;
   canManageTeam: boolean;
   canChangeTheme: boolean;
+  maxWebsites: number;
+  maxDailyActions: number;
+  maxDailyVisits: number;
 };
 
 export const SUBSCRIPTION_CONFIG: Record<string, SubscriptionLimits> = {
@@ -19,6 +22,9 @@ export const SUBSCRIPTION_CONFIG: Record<string, SubscriptionLimits> = {
     canAccessBookingLink: false,
     canManageTeam: false,
     canChangeTheme: false,
+    maxWebsites: 0,
+    maxDailyActions: 0,
+    maxDailyVisits: 10,
   },
   pro: {
     maxSchedulesPerMonth: 500,
@@ -28,6 +34,9 @@ export const SUBSCRIPTION_CONFIG: Record<string, SubscriptionLimits> = {
     canAccessBookingLink: true,
     canManageTeam: true,
     canChangeTheme: true,
+    maxWebsites: 1,
+    maxDailyActions: 5,
+    maxDailyVisits: 50,
   },
   ultimate: {
     maxSchedulesPerMonth: 1000,
@@ -37,6 +46,9 @@ export const SUBSCRIPTION_CONFIG: Record<string, SubscriptionLimits> = {
     canAccessBookingLink: true,
     canManageTeam: true,
     canChangeTheme: true,
+    maxWebsites: 2,
+    maxDailyActions: 15,
+    maxDailyVisits: 200,
   },
 };
 

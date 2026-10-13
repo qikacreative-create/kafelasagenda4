@@ -36,6 +36,7 @@ import {
   UserRoleType,
   WebLayoutType,
 } from '../types/kafela';
+import { checkAndIncrementActions } from '../services/firebaseClient';
 import {
   bersihkanSlugBrand,
   bersihkanTitik,
@@ -1366,6 +1367,8 @@ export const PengaturanStudioView: React.FC<{
   const [openSectionSosmed, setOpenSectionSosmed] = useState<boolean>(false);
   const [openSectionUpload, setOpenSectionUpload] = useState<boolean>(false);
   const [openSectionWeb2, setOpenSectionWeb2] = useState<boolean>(false);
+  const [openSectionCustomLinks, setOpenSectionCustomLinks] = useState<boolean>(false);
+  const [customLinks, setCustomLinks] = useState<{ title: string; url: string }[]>(owner.customLinks || []);
 
   // Website Profil Ke-2 (Sub-Brand / Spesialisasi)
   const [web2Aktif, setWeb2Aktif] = useState(owner.webProfil2?.aktif || false);
@@ -1631,6 +1634,9 @@ export const PengaturanStudioView: React.FC<{
           layoutWeb,
           linkIg,
           linkTiktok,
+              linkYoutube,
+    linkFacebook,
+
           lokasi1,
           lokasi2,
           lokasi3,
@@ -1642,6 +1648,8 @@ export const PengaturanStudioView: React.FC<{
           ctaTeksKustom,
           ctaLinkKustom,
           teksTombolBooking,
+              customLinks,
+
           isWebsiteActive: true,
         };
         sessionStorage.setItem('current_owner_preview_draft', JSON.stringify(draft));
@@ -2216,6 +2224,73 @@ export const PengaturanStudioView: React.FC<{
               </div>
             )}
           </div>
+
+          {/* TAUTAN KUSTOM ALA LINKTREE */}
+          <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setOpenSectionCustomLinks(!openSectionCustomLinks)}
+              className="w-full flex items-center justify-between p-3.5 text-left font-bold text-white text-xs hover:bg-slate-900/50 cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <span>🌳</span>
+                <span>Kolom Tautan Kustom  ({customLinks.length})</span>
+              </div>
+              <span className="text-slate-400 text-xs px-2 py-0.5 rounded bg-slate-950 border border-slate-700">
+                {openSectionCustomLinks ? '▲' : '▼'}
+              </span>
+            </button>
+            {openSectionCustomLinks && (
+              <div className="p-4 pt-0 space-y-3 border-t border-slate-800/80">
+                <p className="text-[11px] text-slate-400 pt-3">
+                  Tambahkan kolom tautan (Linktree) di bawah tombol portofolio dan paket pada halaman sampul profil publik Anda.
+                </p>
+                {customLinks.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="text"
+                        placeholder="Judul Tautan (Cth: Katalog PDF / Promo Lebaran)"
+                        value={item.title}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomLinks(prev => prev.map((l, i) => i === idx ? { ...l, title: val } : l));
+                        }}
+                        className="w-full rounded bg-slate-950 border border-slate-700 px-2.5 py-1.5 text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        placeholder="URL Tujuan (Cth: https://wa.me/... atau Google Drive)"
+                        value={item.url}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomLinks(prev => prev.map((l, i) => i === idx ? { ...l, url: val } : l));
+                        }}
+                        className="w-full rounded bg-slate-950 border border-slate-700 px-2.5 py-1.5 text-xs text-white font-mono"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCustomLinks(prev => prev.filter((_, i) => i !== idx))}
+                      className="p-2 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 cursor-pointer"
+                      title="Hapus Tautan"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCustomLinks(prev => [...prev, { title: '', url: '' }])}
+                  className="w-full py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Kolom Tautan Baru</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
             type="button"
             disabled={isSavingToast}
@@ -2234,6 +2309,7 @@ export const PengaturanStudioView: React.FC<{
                   lokasi1: lokasi1.trim(),
                   lokasi2: lokasi2.trim(),
                   lokasi3: lokasi3.trim(),
+                  customLinks: customLinks.filter(l => l.title.trim() !== ''),
                 },
                 'Website & Link berhasil disimpan!'
               )
@@ -2806,10 +2882,7 @@ export const PengaturanStudioView: React.FC<{
                     <h4 className="font-bold text-white text-xs">
                       Website Profil Ke-2 (Sub-Brand / Spesialisasi Niche)
                     </h4>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950">
-                      PRO+ ADD-ON (Rp 10.000 / Bln) / ULTIMATE
-                    </span>
-                  </div>
+                               </div>
                   <p className="text-[11px] text-slate-400">
                     Miliki 2 link profil web berbeda (misal: Wedding vs Self Studio / Wisuda / MUA) dalam 1 akun kasir yang sama!
                   </p>
@@ -3025,18 +3098,24 @@ export const PengaturanStudioView: React.FC<{
             ) : (
               <div className="rounded-lg bg-slate-900/50 border border-dashed border-slate-800 p-4 text-center space-y-2">
                 <p className="text-slate-300 font-bold text-xs">
-                  Website Profil Ke-2 belum diaktifkan.
+                  {owner.paketAktif !== 'Ultimate' 
+                    ? 'Website Profil Ke-2 memerlukan Paket Ultimate.' 
+                    : 'Website Profil Ke-2 belum diaktifkan.'}
                 </p>
                 <p className="text-[11px] text-slate-400 max-w-md mx-auto">
-                  Aktifkan fitur ini untuk membuat halaman web kedua dengan portofolio, slogan, dan tema terpisah tanpa harus membuat akun kasir baru.
+                  {owner.paketAktif !== 'Ultimate' 
+                    ? 'Upgrade ke paket Ultimate untuk mengaktifkan fitur website kedua.' 
+                    : 'Aktifkan fitur ini untuk membuat halaman web kedua dengan portofolio, slogan, dan tema terpisah tanpa harus membuat akun kasir baru.'}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setWeb2Aktif(true)}
-                  className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer inline-flex items-center gap-1.5"
-                >
-                  <span>✨ Aktifkan Web Profil Ke-2 Sekarang</span>
-                </button>
+                {owner.paketAktif === 'Ultimate' && (
+                  <button
+                    type="button"
+                    onClick={() => setWeb2Aktif(true)}
+                    className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <span>✨ Aktifkan Web Profil Ke-2 Sekarang</span>
+                  </button>
+                )}
               </div>
             )}
               </div>
@@ -3082,6 +3161,13 @@ export const PengaturanStudioView: React.FC<{
                   ? await compressDataUrlToBudget(logoWeb, 500, 45000)
                   : logoWeb || '/logo-kafela.svg';
 
+              // Check rate limit
+              const isAllowed = await checkAndIncrementActions(owner.uid, owner.paketAktif);
+              if (!isAllowed) {
+                alert("Batas aktivitas harian tercapai. Silakan coba lagi besok.");
+                return;
+              }
+
               handleSaveOwnerWithToast(
                 {
                   username: usernameWeb.trim().toLowerCase().replace(/\s+/g, ''),
@@ -3089,6 +3175,9 @@ export const PengaturanStudioView: React.FC<{
                   bioWeb,
                   linkIg,
                   linkTiktok,
+                            linkYoutube,
+          linkFacebook,
+
                   lokasi1,
                   lokasi2,
                   lokasi3,
@@ -3102,6 +3191,8 @@ export const PengaturanStudioView: React.FC<{
                   ctaTeksKustom,
                   ctaLinkKustom,
                   teksTombolBooking,
+                            customLinks,
+
                   isWebsiteActive,
                   isBookingActive,
                   webProfil2: {
