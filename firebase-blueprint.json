@@ -33,9 +33,26 @@
         "status": { "type": "string" }
       },
       "required": ["idJadwal", "namaAcara"]
+    },
+    "BrandRegistry": {
+      "title": "BrandRegistry",
+      "description": "Indeks direktori pendaftaran brand multi-tenant",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string" },
+        "namaBrand": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "tier": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["slug", "namaBrand", "ownerId"]
     }
   },
   "firestore": {
+    "/brands_registry/{slug}": {
+      "schema": "BrandRegistry",
+      "description": "Indeks direktori pendaftaran dan lisensi brand multi-tenant"
+    },
     "/owners/{ownerId}": {
       "schema": "Owner",
       "description": "Dokumen profil pemilik studio"

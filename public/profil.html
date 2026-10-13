@@ -92,12 +92,31 @@
            A. HORIZONTAL_BOOK: Geser Samping per Bab (Bawaan)
            B. VERTICAL_LANDING: Scroll ke Bawah Alami dengan Penataan Hero & Section Segar!
            ========================================================================== */
+        /* ==========================================================================
+           8 ARSITEKTUR TATA LETAK PROFIL BERBEDA:
+           1. HORIZONTAL_BOOK: Geser Samping per Bab (Lookbook Majalah Seni)
+           2. VERTICAL_LANDING: Landing Page Modern (Scroll Vertikal Bawah)
+           3. CINEMATIC_SHOWCASE: Sinematik Layar Lebar 21:9 & Moodboard Film Noir
+           4. GRID_MASONRY: Galeri Pinterest / Dinding Foto Staggered Multi-Tinggi
+           5. SPLIT_EDITORIAL: Split-Screen Atelier (Panel Kiri Sticky & Feed Kanan)
+           6. MINIMAL_LINKTREE: Biolink Bio IG/TikTok Terpusat & Akordeon Tarif
+           7. CAROUSEL_FULLSCREEN: 100vh Fullscreen Imersif & Laci Katalog Bawah
+           8. RETRO_BRUTALIST: Neo-Brutalist & Pop Studio Modern (Garis Tebal & Stiker)
+           ========================================================================== */
         html.layout-vertical,
         body.layout-vertical,
         html[data-layout="VERTICAL_LANDING"],
         body[data-layout="VERTICAL_LANDING"],
-        html[data-theme="VERTICAL_LANDING"],
-        body[data-theme="VERTICAL_LANDING"] {
+        html[data-layout="CINEMATIC_SHOWCASE"],
+        body[data-layout="CINEMATIC_SHOWCASE"],
+        html[data-layout="GRID_MASONRY"],
+        body[data-layout="GRID_MASONRY"],
+        html[data-layout="SPLIT_EDITORIAL"],
+        body[data-layout="SPLIT_EDITORIAL"],
+        html[data-layout="MINIMAL_LINKTREE"],
+        body[data-layout="MINIMAL_LINKTREE"],
+        html[data-layout="RETRO_BRUTALIST"],
+        body[data-layout="RETRO_BRUTALIST"] {
             width: 100% !important;
             height: auto !important;
             min-height: 100vh !important;
@@ -108,7 +127,10 @@
 
         body.layout-vertical .t-amour,
         body[data-layout="VERTICAL_LANDING"] .t-amour,
-        body[data-theme="VERTICAL_LANDING"] .t-amour {
+        body[data-layout="CINEMATIC_SHOWCASE"] .t-amour,
+        body[data-layout="GRID_MASONRY"] .t-amour,
+        body[data-layout="SPLIT_EDITORIAL"] .t-amour,
+        body[data-layout="RETRO_BRUTALIST"] .t-amour {
             width: 100% !important;
             height: auto !important;
             min-height: 100vh !important;
@@ -117,7 +139,9 @@
 
         body.layout-vertical .book,
         body[data-layout="VERTICAL_LANDING"] .book,
-        body[data-theme="VERTICAL_LANDING"] .book {
+        body[data-layout="CINEMATIC_SHOWCASE"] .book,
+        body[data-layout="GRID_MASONRY"] .book,
+        body[data-layout="RETRO_BRUTALIST"] .book {
             display: block !important;
             width: 100% !important;
             height: auto !important;
@@ -127,7 +151,9 @@
 
         body.layout-vertical .page,
         body[data-layout="VERTICAL_LANDING"] .page,
-        body[data-theme="VERTICAL_LANDING"] .page {
+        body[data-layout="CINEMATIC_SHOWCASE"] .page,
+        body[data-layout="GRID_MASONRY"] .page,
+        body[data-layout="RETRO_BRUTALIST"] .page {
             flex: none !important;
             width: 100% !important;
             height: auto !important;
@@ -141,7 +167,9 @@
 
         body.layout-vertical .page.cover,
         body[data-layout="VERTICAL_LANDING"] .page.cover,
-        body[data-theme="VERTICAL_LANDING"] .page.cover {
+        body[data-layout="CINEMATIC_SHOWCASE"] .page.cover,
+        body[data-layout="GRID_MASONRY"] .page.cover,
+        body[data-layout="RETRO_BRUTALIST"] .page.cover {
             min-height: 92vh !important;
             display: flex !important;
             align-items: center !important;
@@ -155,9 +183,531 @@
         body.layout-vertical .hint,
         body[data-layout="VERTICAL_LANDING"] .dots,
         body[data-layout="VERTICAL_LANDING"] .hint,
-        body[data-theme="VERTICAL_LANDING"] .dots,
-        body[data-theme="VERTICAL_LANDING"] .hint {
+        body[data-layout="CINEMATIC_SHOWCASE"] .dots,
+        body[data-layout="CINEMATIC_SHOWCASE"] .hint,
+        body[data-layout="GRID_MASONRY"] .dots,
+        body[data-layout="GRID_MASONRY"] .hint,
+        body[data-layout="SPLIT_EDITORIAL"] .dots,
+        body[data-layout="SPLIT_EDITORIAL"] .hint,
+        body[data-layout="MINIMAL_LINKTREE"] .dots,
+        body[data-layout="MINIMAL_LINKTREE"] .hint,
+        body[data-layout="RETRO_BRUTALIST"] .dots,
+        body[data-layout="RETRO_BRUTALIST"] .hint {
             display: none !important;
+        }
+
+        /* ==========================================================================
+           3. CINEMATIC_SHOWCASE STYLING (Sinematik Layar Lebar 21:9 & Moodboard Noir)
+           ========================================================================== */
+        body[data-layout="CINEMATIC_SHOWCASE"] {
+            --am-bg: #070709;
+            --am-paper: #111116;
+            --am-nav-bg: rgba(7, 7, 9, 0.95);
+            --am-ink: #f8fafc;
+            --am-muted: #94a3b8;
+            --am-accent: #d4af37;
+            --am-gold: #fbbf24;
+            --am-line: #1e1e28;
+            --am-btn-bg: #d4af37;
+            --am-btn-text: #070709;
+            background: #070709 !important;
+            color: #f8fafc !important;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] .page.cover {
+            min-height: 85vh !important;
+            padding: 120px 24px 80px !important;
+            background: radial-gradient(circle at center, rgba(30, 25, 45, 0.5) 0%, rgba(7, 7, 9, 0.98) 80%) !important;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] .cover-frame {
+            max-width: 980px !important;
+            padding: 50px 36px !important;
+            border: 1px solid rgba(212, 175, 55, 0.35) !important;
+            background: rgba(17, 17, 22, 0.92) !important;
+            backdrop-filter: blur(20px) !important;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+            border-radius: 20px !important;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] .cover-title {
+            font-family: 'Cormorant Garamond', Georgia, serif !important;
+            font-size: clamp(36px, 5.2vw, 64px) !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            background: linear-gradient(135deg, #ffffff 40%, #e2d3af 100%);
+            -webkit-text-fill-color: transparent;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] .cinematic-badge {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #fbbf24;
+            padding: 5px 14px;
+            border-radius: 99px;
+            background: rgba(212, 175, 55, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            margin-bottom: 14px;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] .featured-karya-hero {
+            height: 480px !important;
+            border-radius: 18px !important;
+            border: 1px solid rgba(212, 175, 55, 0.35) !important;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.85) !important;
+        }
+        /* Reel Filmstrip Horizontal untuk Sinematik 21:9 */
+        body[data-layout="CINEMATIC_SHOWCASE"] .gal-grid {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory !important;
+            gap: 18px !important;
+            padding: 18px 4px 24px !important;
+            scrollbar-width: thin;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] figure.gal {
+            flex: 0 0 300px !important;
+            scroll-snap-align: center !important;
+            background: #111116 !important;
+            border: 1.5px solid rgba(212, 175, 55, 0.35) !important;
+            border-radius: 14px !important;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.7) !important;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] figure.gal img {
+            height: 240px !important;
+        }
+        /* Tiket VIP Premiere untuk Paket Layanan Sinematik */
+        body[data-layout="CINEMATIC_SHOWCASE"] .svc-item {
+            background: #111116 !important;
+            border: 1px solid rgba(212, 175, 55, 0.3) !important;
+            border-left: 5px solid var(--am-gold) !important;
+            border-radius: 16px !important;
+            position: relative;
+        }
+        body[data-layout="CINEMATIC_SHOWCASE"] .svc-item::after {
+            content: "★ VIP PREMIERE PASS";
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            font-size: 9.5px;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            color: #d4af37;
+            background: rgba(212, 175, 55, 0.12);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* ==========================================================================
+           4. GRID_MASONRY STYLING (Galeri Masonry Pinterest & Multi-Kolom)
+           ========================================================================== */
+        body[data-layout="GRID_MASONRY"] {
+            --am-bg: #090e17;
+            --am-paper: #121926;
+            --am-nav-bg: rgba(9, 14, 23, 0.94);
+            --am-ink: #f1f5f9;
+            --am-muted: #94a3b8;
+            --am-accent: #38bdf8;
+            --am-gold: #0284c7;
+            --am-line: #1e293b;
+            --am-btn-bg: #0284c7;
+            --am-btn-text: #ffffff;
+            background: #090e17 !important;
+            color: #f1f5f9 !important;
+        }
+        body[data-layout="GRID_MASONRY"] .gal-grid {
+            display: block !important;
+            column-count: 1 !important;
+            column-gap: 20px !important;
+        }
+        @media (min-width: 640px) {
+            body[data-layout="GRID_MASONRY"] .gal-grid {
+                column-count: 2 !important;
+            }
+        }
+        @media (min-width: 1024px) {
+            body[data-layout="GRID_MASONRY"] .gal-grid {
+                column-count: 3 !important;
+            }
+        }
+        body[data-layout="GRID_MASONRY"] figure.gal {
+            display: inline-block !important;
+            width: 100% !important;
+            margin-bottom: 20px !important;
+            break-inside: avoid !important;
+            border-radius: 18px !important;
+            overflow: hidden !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4) !important;
+            transition: transform 0.25s, box-shadow 0.25s !important;
+        }
+        body[data-layout="GRID_MASONRY"] figure.gal:hover {
+            transform: translateY(-6px) !important;
+            box-shadow: 0 20px 48px rgba(2, 132, 199, 0.25) !important;
+            border-color: #38bdf8 !important;
+        }
+        body[data-layout="GRID_MASONRY"] figure.gal img {
+            height: auto !important;
+            max-height: 520px !important;
+            object-fit: cover !important;
+            width: 100% !important;
+        }
+        /* Filter Kategori Tag Pills */
+        .masonry-filter-wrap {
+            display: none;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        body[data-layout="GRID_MASONRY"] .masonry-filter-wrap {
+            display: flex !important;
+        }
+        .masonry-filter-pill {
+            padding: 7px 16px;
+            border-radius: 99px;
+            background: #121926;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid #1e293b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .masonry-filter-pill:hover,
+        .masonry-filter-pill.active {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #38bdf8;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+        }
+
+        /* ==========================================================================
+           5. SPLIT_EDITORIAL STYLING (Split-Screen Atelier Fashion Monograph)
+           ========================================================================== */
+        body[data-layout="SPLIT_EDITORIAL"] {
+            --am-bg: #101014;
+            --am-paper: #18181f;
+            --am-nav-bg: rgba(16, 16, 20, 0.95);
+            --am-ink: #fcfcfc;
+            --am-muted: #a1a1aa;
+            --am-accent: #e4d5b7;
+            --am-gold: #c5a059;
+            --am-line: #27272f;
+            --am-btn-bg: #fcfcfc;
+            --am-btn-text: #101014;
+            background: #101014 !important;
+            color: #fcfcfc !important;
+        }
+        @media (min-width: 960px) {
+            body[data-layout="SPLIT_EDITORIAL"] .book {
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                min-height: 100vh !important;
+                overflow: visible !important;
+            }
+            body[data-layout="SPLIT_EDITORIAL"] #sectionSampul {
+                width: 44% !important;
+                height: 100vh !important;
+                position: sticky !important;
+                top: 0 !important;
+                overflow-y: auto !important;
+                padding: 60px 40px !important;
+                border-right: 1px solid var(--am-line) !important;
+                border-bottom: none !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            body[data-layout="SPLIT_EDITORIAL"] .cover-frame {
+                max-width: 100% !important;
+                padding: 30px 10px !important;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                text-align: left !important;
+            }
+            body[data-layout="SPLIT_EDITORIAL"] .cover-frame .cover-title {
+                text-align: left !important;
+            }
+            body[data-layout="SPLIT_EDITORIAL"] .cover-frame p {
+                text-align: left !important;
+                margin-left: 0 !important;
+            }
+            body[data-layout="SPLIT_EDITORIAL"] #sectionKarya,
+            body[data-layout="SPLIT_EDITORIAL"] #sectionLayanan,
+            body[data-layout="SPLIT_EDITORIAL"] #sectionKontak {
+                width: 56% !important;
+                float: right !important;
+                padding: 60px 40px !important;
+            }
+        }
+
+        /* ==========================================================================
+           6. MINIMAL_LINKTREE STYLING (Bio-Link Premium Ringkas IG & TikTok)
+           ========================================================================== */
+        body[data-layout="MINIMAL_LINKTREE"] {
+            --am-bg: #090d16;
+            --am-paper: #111726;
+            --am-nav-bg: rgba(9, 13, 22, 0.95);
+            --am-ink: #f8fafc;
+            --am-muted: #94a3b8;
+            --am-accent: #f43f5e;
+            --am-gold: #fb7185;
+            --am-line: #1e293b;
+            --am-btn-bg: #f43f5e;
+            --am-btn-text: #ffffff;
+            background: #090d16 !important;
+            color: #f8fafc !important;
+        }
+        body[data-layout="MINIMAL_LINKTREE"] .t-amour {
+            max-width: 540px !important;
+            margin: 0 auto !important;
+            min-height: 100vh !important;
+            border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background: #0d121f !important;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.8) !important;
+        }
+        body[data-layout="MINIMAL_LINKTREE"] .am-nav {
+            display: none !important;
+        }
+        body[data-layout="MINIMAL_LINKTREE"] .page.cover {
+            min-height: auto !important;
+            padding: 40px 18px 24px !important;
+            border-bottom: 1px solid var(--am-line) !important;
+        }
+        body[data-layout="MINIMAL_LINKTREE"] .cover-frame {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+        body[data-layout="MINIMAL_LINKTREE"] .gal-grid {
+            display: flex !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory !important;
+            gap: 12px !important;
+            padding-bottom: 14px !important;
+        }
+        body[data-layout="MINIMAL_LINKTREE"] figure.gal {
+            flex: 0 0 210px !important;
+            scroll-snap-align: start !important;
+            border-radius: 14px !important;
+        }
+        body[data-layout="MINIMAL_LINKTREE"] .svc-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+
+        /* ==========================================================================
+           7. CAROUSEL_FULLSCREEN STYLING (100vh Fullscreen Imersif & Laci Bawah)
+           ========================================================================== */
+        body[data-layout="CAROUSEL_FULLSCREEN"] {
+            --am-bg: #000000;
+            --am-paper: #111111;
+            --am-nav-bg: rgba(0, 0, 0, 0.85);
+            --am-ink: #ffffff;
+            --am-muted: #a3a3a3;
+            --am-accent: #38bdf8;
+            --am-gold: #0ea5e9;
+            --am-line: rgba(255, 255, 255, 0.15);
+            --am-btn-bg: #0ea5e9;
+            --am-btn-text: #ffffff;
+            background: #000000 !important;
+            color: #ffffff !important;
+            overflow: hidden !important;
+        }
+        body[data-layout="CAROUSEL_FULLSCREEN"] .book {
+            display: flex !important;
+            scroll-snap-type: x mandatory !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        body[data-layout="CAROUSEL_FULLSCREEN"] .page {
+            flex: 0 0 100vw !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+            padding: 90px 24px 90px !important;
+            scroll-snap-align: start !important;
+        }
+        body[data-layout="CAROUSEL_FULLSCREEN"] .dots {
+            display: flex !important;
+            bottom: 24px !important;
+        }
+        body[data-layout="CAROUSEL_FULLSCREEN"] .dots .dot {
+            width: 28px !important;
+            height: 5px !important;
+            border-radius: 99px !important;
+            background: rgba(255, 255, 255, 0.25) !important;
+        }
+        body[data-layout="CAROUSEL_FULLSCREEN"] .dots .dot.on {
+            background: #0ea5e9 !important;
+            width: 44px !important;
+        }
+        /* Tombol Panah Layar Penuh */
+        .carousel-arrow {
+            display: none;
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 66;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(18, 18, 18, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .carousel-arrow:hover {
+            background: #0ea5e9;
+            transform: translateY(-50%) scale(1.1);
+        }
+        .carousel-arrow-prev { left: 16px; }
+        .carousel-arrow-next { right: 16px; }
+        body[data-layout="CAROUSEL_FULLSCREEN"] .carousel-arrow {
+            display: flex !important;
+        }
+        /* Laci Katalog Bawah Fullscreen */
+        .carousel-drawer-trigger {
+            display: none;
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 66;
+            background: rgba(14, 165, 233, 0.92);
+            color: #ffffff;
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 9px 22px;
+            border-radius: 99px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            align-items: center;
+            gap: 6px;
+        }
+        body[data-layout="CAROUSEL_FULLSCREEN"] .carousel-drawer-trigger {
+            display: flex !important;
+        }
+
+        /* ==========================================================================
+           8. RETRO_BRUTALIST STYLING (Neo-Brutalist Pop Studio & Garis Tebal)
+           ========================================================================== */
+        body[data-layout="RETRO_BRUTALIST"] {
+            --am-bg: #faf6ee;
+            --am-paper: #ffffff;
+            --am-nav-bg: #faf6ee;
+            --am-ink: #111827;
+            --am-muted: #4b5563;
+            --am-accent: #facc15;
+            --am-gold: #f59e0b;
+            --am-line: #111827;
+            --am-btn-bg: #facc15;
+            --am-btn-text: #111827;
+            --am-shadow: 4px 4px 0px #111827;
+            background: #faf6ee !important;
+            color: #111827 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .am-nav {
+            border-bottom: 2.5px solid #111827 !important;
+            background: #faf6ee !important;
+            box-shadow: 0 4px 0px #111827 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .am-nav-book-btn {
+            background: #facc15 !important;
+            color: #111827 !important;
+            border: 2px solid #111827 !important;
+            border-radius: 6px !important;
+            box-shadow: 3px 3px 0px #111827 !important;
+            font-weight: 800 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .am-nav-book-btn:hover {
+            transform: translate(2px, 2px) !important;
+            box-shadow: 1px 1px 0px #111827 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .cover-frame {
+            background: #ffffff !important;
+            border: 3px solid #111827 !important;
+            border-radius: 8px !important;
+            box-shadow: 6px 6px 0px #111827 !important;
+            color: #111827 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .cover-title {
+            color: #111827 !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            letter-spacing: -0.02em !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .btn-cover {
+            background: #facc15 !important;
+            color: #111827 !important;
+            border: 2px solid #111827 !important;
+            border-radius: 6px !important;
+            box-shadow: 3px 3px 0px #111827 !important;
+            font-weight: 800 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .btn-cover:hover {
+            transform: translate(2px, 2px) !important;
+            box-shadow: 1px 1px 0px #111827 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .svc-item {
+            background: #ffffff !important;
+            border: 2.5px solid #111827 !important;
+            border-radius: 8px !important;
+            box-shadow: 4px 4px 0px #111827 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .svc-item .svc-name {
+            color: #111827 !important;
+            font-weight: 800 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .svc-item .svc-price {
+            color: #b45309 !important;
+            font-weight: 900 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .svc-btn {
+            background: #111827 !important;
+            color: #ffffff !important;
+            border: 2px solid #111827 !important;
+            border-radius: 6px !important;
+            box-shadow: 3px 3px 0px #facc15 !important;
+            font-weight: 800 !important;
+        }
+        body[data-layout="RETRO_BRUTALIST"] figure.gal {
+            border: 2.5px solid #111827 !important;
+            border-radius: 8px !important;
+            box-shadow: 4px 4px 0px #111827 !important;
+        }
+        .brutalist-ticker-bar {
+            display: none;
+        }
+        body[data-layout="RETRO_BRUTALIST"] .brutalist-ticker-bar {
+            display: block;
+            background: #facc15;
+            color: #111827;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            padding: 7px 14px;
+            border-bottom: 2.5px solid #111827;
+            white-space: nowrap;
+            overflow: hidden;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            text-transform: uppercase;
         }
 
         /* Floating Quick Action Bar di Mobile untuk Layout Vertikal */
@@ -167,6 +717,11 @@
         @media (max-width: 768px) {
             body.layout-vertical .vertical-floating-bar,
             body[data-layout="VERTICAL_LANDING"] .vertical-floating-bar,
+            body[data-layout="CINEMATIC_SHOWCASE"] .vertical-floating-bar,
+            body[data-layout="GRID_MASONRY"] .vertical-floating-bar,
+            body[data-layout="SPLIT_EDITORIAL"] .vertical-floating-bar,
+            body[data-layout="MINIMAL_LINKTREE"] .vertical-floating-bar,
+            body[data-layout="RETRO_BRUTALIST"] .vertical-floating-bar,
             body[data-theme="VERTICAL_LANDING"] .vertical-floating-bar {
                 display: flex;
                 position: fixed;
@@ -566,18 +1121,19 @@
         .social-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 99px;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border-radius: 50%;
             text-decoration: none;
             color: #ffffff;
-            font-weight: 700;
-            font-size: 13px;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .social-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.08);
         }
 
         .btn-ig {
@@ -587,6 +1143,14 @@
         .btn-tiktok {
             background: #141418;
             border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-wa {
+            background: #25D366;
+        }
+
+        .btn-email {
+            background: #ea4335;
         }
 
         /* ==========================================================================
@@ -939,25 +1503,139 @@
             figure.gal img { height: 240px; }
             .cover-frame { padding: 38px 22px; }
         }
+
+        /* MODAL RAHASIA PORTAL LOGIN KRU / KASIR */
+        .secret-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 14, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 100000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .secret-modal-backdrop.open {
+            display: flex;
+            opacity: 1;
+        }
+        .secret-modal-card {
+            background: #18181f;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 20px;
+            padding: 32px 26px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            transform: scale(0.92);
+            transition: transform 0.25s ease;
+            color: #f1f5f9;
+        }
+        .secret-modal-backdrop.open .secret-modal-card {
+            transform: scale(1);
+        }
+        .secret-icon-wrap {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: rgba(212, 175, 55, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        .secret-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+        .secret-desc {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+        .secret-brand-pill {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 4px 14px;
+            border-radius: 99px;
+            font-size: 12px;
+            color: #fbbf24;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .secret-btn-primary {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #d4af37 0%, #b89146 100%);
+            color: #0c0b0e;
+            font-weight: 800;
+            font-size: 14px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-bottom: 10px;
+        }
+        .secret-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px rgba(212, 175, 55, 0.45);
+        }
+        .secret-btn-cancel {
+            width: 100%;
+            padding: 11px;
+            background: transparent;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .secret-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #f1f5f9;
+        }
+        .logo-clickable {
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            user-select: none;
+        }
+        .logo-clickable:active {
+            transform: scale(0.92);
+        }
     </style>
 </head>
 <body data-theme="MODERN_STUDIO">
     <div id="splashScreen" style="position:fixed; inset:0; z-index:99999; background: #0c0b0e; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-        <img src="/logo-kafela.svg" style="width: 80px; height: 80px; margin-bottom: 20px;">
-        <div style="color: #ffffff; font-size: 14px; font-weight: 600;">Memuat Kafela Agenda...</div>
+        <div style="color: #ffffff; font-size: 14px; font-weight: 600;">Memuat Data...</div>
     </div>
 
     <div class="t-amour">
-        <!-- NAVBAR ATAS (4 HALAMAN/SEKSI: SAMPUL, PORTOFOLIO, LAYANAN, KONTAK) -->
+    
+        <!-- NAVBAR ATAS (4 HALAMAN/SEKSI: LANDING PAGE, PORTOFOLIO, LAYANAN, PENUTUP) -->
         <nav class="am-nav">
             <a class="am-brand" onclick="navigasiKe(0, 'sectionSampul')">
-                <img id="amLogoImg" class="am-brand-logo" src="/logo-kafela.svg" alt="Logo" style="display: block;">
+                <img id="amLogoImg" class="am-brand-logo logo-clickable" onclick="handleLogoClick(event)" src="/logo-kafela.svg" alt="Logo" style="display: block;" title="Klik 3x untuk Portal Kru">
                 <span class="js-nama-brand">Memuat Profil...</span>
             </a>
             <div class="am-nav-links">
                 <a class="am-nav-link active" onclick="navigasiKe(0, 'sectionSampul')">Sampul</a>
-                <a class="am-nav-link" onclick="navigasiKe(1, 'sectionLayanan')">Layanan</a>
-                <a class="am-nav-link" onclick="navigasiKe(2, 'sectionKarya')">Portofolio</a>
+                <a class="am-nav-link" onclick="navigasiKe(1, 'sectionKarya')">Portofolio</a>
+                <a class="am-nav-link" onclick="navigasiKe(2, 'sectionLayanan')">Layanan</a>
                 <a class="am-nav-link" onclick="navigasiKe(3, 'sectionKontak')">Kontak</a>
             </div>
             <button type="button" id="topNavBookingBtn" class="am-nav-book-btn" onclick="bukaFormBooking('', '')">Booking Online &rarr;</button>
@@ -971,8 +1649,11 @@
                 <img id="amCoverBg" class="cover-bg" src="" alt="Sampul">
                 <div class="page-in cover-in">
                     <div class="cover-frame">
-                        <div style="width: 78px; height: 78px; border-radius: 50%; overflow: hidden; margin: 0 auto 14px; border: 2px solid rgba(255,255,255,0.65); background: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.28);">
+                        <div class="logo-clickable" style="width: 78px; height: 78px; border-radius: 50%; overflow: hidden; margin: 0 auto 14px; border: 2px solid rgba(255,255,255,0.65); background: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.28);" onclick="handleLogoClick(event)" title="Klik 3x untuk Portal Kru">
                             <img id="coverLogoImg" src="/logo-kafela.svg" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
+                        <div id="cinematicBadgeEl" class="cinematic-badge" style="display: none;">
+                            <span>🎬</span> <span>21:9 Widescreen Premiere Showcase</span>
                         </div>
                         <p id="coverJenisEl" class="cover-eyebrow js-jenis-usaha" style="display: none;"></p>
                         <h1 class="cover-title js-nama-brand" style="margin-bottom: 8px;"></h1>
@@ -991,23 +1672,20 @@
                 </div>
             </section>
 
-            <!-- HALAMAN 2 / SECTION 2: DAFTAR LAYANAN -->
-            <section class="page" id="sectionLayanan">
-                <div class="page-in">
-                    <div class="page-head">
-                        <span class="chapter">Katalog &amp; Tarif</span>
-                        <h2 class="title">Pilihan <em>Paket Layanan</em></h2>
-                    </div>
-                    <div id="amServicesGrid" class="svc-grid"></div>
-                </div>
-            </section>
-
-            <!-- HALAMAN 3 / SECTION 3: PORTOFOLIO -->
+            <!-- HALAMAN 2 / SECTION 2: PORTOFOLIO -->
             <section class="page" id="sectionKarya">
                 <div class="page-in">
                     <div class="page-head">
                         <span class="chapter" id="karyaChapterEl">Dokumentasi &amp; Portofolio</span>
                         <h2 class="title" id="karyaTitleEl">Galeri <em>Portofolio</em></h2>
+                    </div>
+
+                    <!-- FILTER KATEGORI UNTUK LAYOUT GRID MASONRY -->
+                    <div id="masonryFilterBar" class="masonry-filter-wrap">
+                        <button type="button" class="masonry-filter-pill active" onclick="filterKaryaMasonry('ALL', this)">✨ Semua Karya</button>
+                        <button type="button" class="masonry-filter-pill" onclick="filterKaryaMasonry('HIGHLIGHT', this)">🌟 Sorotan</button>
+                        <button type="button" class="masonry-filter-pill" onclick="filterKaryaMasonry('ACARA', this)">🎪 Acara &amp; Momen</button>
+                        <button type="button" class="masonry-filter-pill" onclick="filterKaryaMasonry('DETAIL', this)">📸 Detail &amp; Dekor</button>
                     </div>
 
                     <!-- 1 FOTO UTAMA BESAR DI ATAS HALAMAN PORTOFOLIO -->
@@ -1024,6 +1702,23 @@
 
                     <!-- GRID FOTO PORTOFOLIO DI BAWAH FOTO BESAR -->
                     <div id="amGalleryGrid" class="gal-grid"></div>
+
+                    <div style="text-align: center; margin-top: 28px;">
+                        <button type="button" class="am-nav-book-btn" onclick="navigasiKe(2, 'sectionLayanan')" style="padding: 13px 28px; font-size: 13.5px;">
+                            Lihat Paket &amp; Layanan &rarr;
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HALAMAN 3 / SECTION 3: DAFTAR LAYANAN -->
+            <section class="page" id="sectionLayanan">
+                <div class="page-in">
+                    <div class="page-head">
+                        <span class="chapter">Katalog &amp; Tarif</span>
+                        <h2 class="title">Pilihan <em>Paket Layanan</em></h2>
+                    </div>
+                    <div id="amServicesGrid" class="svc-grid"></div>
 
                     <div style="text-align: center; margin-top: 28px;">
                         <button type="button" class="am-nav-book-btn" onclick="navigasiKe(3, 'sectionKontak')" style="padding: 13px 28px; font-size: 13.5px;">
@@ -1059,10 +1754,27 @@
                         <button type="button" id="btnBookingPenutup" class="am-nav-book-btn" onclick="bukaFormBooking('', '')" style="padding: 14px 30px; font-size: 14px; margin-top: 8px;">
                             Isi Form Booking Online Sekarang &rarr;
                         </button>
+
+                        <div style="margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--am-line); text-align: center;">
+                            <span id="discreetOwnerFooter" onclick="bukaSecretModal()" style="font-size: 11px; color: var(--am-muted); opacity: 0.65; cursor: pointer; user-select: none;" title="Akses Kru &amp; Kasir">
+                                &copy; <span class="js-nama-brand">Studio</span> &middot; Portfolio Showcase
+                            </span>
+                            <span id="secretLockIcon" onclick="event.stopPropagation(); bukaSecretModal();" title="Portal Masuk Kru &amp; Kasir" style="display: inline-block; margin-left: 8px; opacity: 0.35; font-size: 12px; cursor: pointer; transition: opacity 0.2s; user-select: none;" onmouseenter="this.style.opacity='0.95'" onmouseleave="this.style.opacity='0.35'">🔒</span>
+                        </div>
                     </div>
                 </div>
             </section>
 
+        </div>
+
+        <!-- TOMBOL NAVIGASI PREV & NEXT UNTUK CAROUSEL FULLSCREEN -->
+        <button type="button" id="carouselPrevBtn" class="carousel-arrow carousel-arrow-prev" onclick="window.navigasiSlideCarousel(-1)" title="Sebelumnya">&#10094;</button>
+        <button type="button" id="carouselNextBtn" class="carousel-arrow carousel-arrow-next" onclick="window.navigasiSlideCarousel(1)" title="Selanjutnya">&#10095;</button>
+
+        <!-- TRIGGER LACI BAWAH UNTUK CAROUSEL FULLSCREEN -->
+        <div id="carouselBottomDrawerTrigger" class="carousel-drawer-trigger" onclick="navigasiKe(2, 'sectionLayanan')">
+            <span>📋 Lihat Katalog Layanan &amp; Tarif</span>
+            <span style="font-size: 10px;">▲</span>
         </div>
 
         <!-- INDIKATOR TITIK 4 HALAMAN & PETUNJUK GESER (Khusus Mode Buku Geser Samping) -->
@@ -1088,6 +1800,24 @@
         <div id="lightboxCaption" class="lightbox-caption"></div>
     </div>
 
+    <!-- MODAL RAHASIA PORTAL MASUK KRU / KASIR -->
+    <div id="secretLoginModal" class="secret-modal-backdrop" onclick="tutupSecretModal()">
+        <div class="secret-modal-card" onclick="event.stopPropagation()">
+            <div class="secret-icon-wrap">🔐</div>
+            <h3 class="secret-title">Portal Kru &amp; Kasir Studio</h3>
+            <div class="secret-brand-pill" id="secretModalBrandName">Studio</div>
+            <p class="secret-desc">
+                Pintu masuk rahasia khusus pengelola, kasir, dan tim operasional untuk membuka aplikasi manajemen agenda, transaksi kasir, &amp; cetak struk pembayaran.
+            </p>
+            <button type="button" class="secret-btn-primary" onclick="bukaHalamanLoginKasir()">
+                Buka Halaman Login Kasir &rarr;
+            </button>
+            <button type="button" class="secret-btn-cancel" onclick="tutupSecretModal()">
+                Kembali ke Portofolio
+            </button>
+        </div>
+    </div>
+
 <script type="module">
     import { collection, getDocs, getDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { db } from '/firebase-config.js'; 
@@ -1105,10 +1835,56 @@
     let wheelTimer = null;
 
     function isVerticalMode() {
+        const l = document.body.getAttribute('data-layout') || '';
         return document.body.classList.contains('layout-vertical') ||
-               document.body.getAttribute('data-layout') === 'VERTICAL_LANDING' ||
+               ['VERTICAL_LANDING', 'CINEMATIC_SHOWCASE', 'GRID_MASONRY', 'SPLIT_EDITORIAL', 'MINIMAL_LINKTREE', 'RETRO_BRUTALIST'].includes(l) ||
                document.body.getAttribute('data-theme') === 'VERTICAL_LANDING';
     }
+
+    window.carouselActiveIdx = 0;
+    window.navigasiSlideCarousel = function(step) {
+        if (window.listKaryaItems && window.listKaryaItems.length > 0) {
+            let nextIdx = (window.carouselActiveIdx || 0) + step;
+            if (nextIdx < 0) nextIdx = window.listKaryaItems.length - 1;
+            if (nextIdx >= window.listKaryaItems.length) nextIdx = 0;
+            window.carouselActiveIdx = nextIdx;
+            window.pilihKaryaUtama(nextIdx);
+        } else {
+            window.goToBookPage(window.bookIdx + step);
+        }
+    };
+
+    window.filterKaryaMasonry = function(kategori, btnEl) {
+        if (btnEl) {
+            document.querySelectorAll('.masonry-filter-pill').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+        }
+        const amGal = document.getElementById('amGalleryGrid');
+        if (!amGal || !window.listKaryaItems) return;
+
+        let filtered = window.listKaryaItems;
+        if (kategori === 'HIGHLIGHT') {
+            filtered = window.listKaryaItems.slice(0, Math.min(2, window.listKaryaItems.length));
+        } else if (kategori === 'ACARA') {
+            filtered = window.listKaryaItems.filter((_, i) => i % 2 === 0);
+        } else if (kategori === 'DETAIL') {
+            filtered = window.listKaryaItems.filter((_, i) => i % 2 !== 0);
+        }
+        if (filtered.length === 0) filtered = window.listKaryaItems;
+
+        amGal.innerHTML = filtered.map((item, idx) => {
+            const safeTitle = item.judul.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            return `
+                <figure class="gal" onclick="klikItemGaleri(${idx}, '${item.url}', '${safeTitle}')">
+                    <img src="${item.url}" alt="${safeTitle}">
+                    <figcaption>
+                        <div class="g-name">${item.judul}</div>
+                        <div class="g-tag">0${idx + 1}</div>
+                    </figcaption>
+                </figure>
+            `;
+        }).join('');
+    };
 
     window.navigasiKe = function(pageIdx, sectionId) {
         if (isVerticalMode()) {
@@ -1167,7 +1943,15 @@
     }, { passive: true });
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') tutupLightbox();
+        if (e.key === 'Escape') {
+            tutupLightbox();
+            tutupSecretModal();
+        }
+        // Shortcut rahasia kru: Ctrl+Shift+L atau Alt+L
+        if ((e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) || (e.altKey && (e.key === 'L' || e.key === 'l'))) {
+            e.preventDefault();
+            bukaSecretModal();
+        }
         if (!isVerticalMode()) {
             if (e.key === 'ArrowRight') window.goToBookPage(window.bookIdx + 1);
             if (e.key === 'ArrowLeft') window.goToBookPage(window.bookIdx - 1);
@@ -1185,6 +1969,21 @@
             idParam = decodeURIComponent(cleanPath);
         }
     }
+    if (!idParam) {
+        const host = window.location.hostname.toLowerCase();
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host.includes('.run.app');
+        if (!isLocal) {
+            if (host.includes('.web.app')) {
+                const sub = host.split('.web.app')[0].split('.').pop();
+                if (sub && sub !== 'kflsagnd' && sub !== 'kafilasuci3') idParam = sub;
+            } else if (host.includes('.firebaseapp.com')) {
+                const sub = host.split('.firebaseapp.com')[0].split('.').pop();
+                if (sub && sub !== 'kflsagnd' && sub !== 'kafilasuci3') idParam = sub;
+            } else if (host !== 'kflsagnd.web.app' && host !== 'kafilasuci3.web.app') {
+                idParam = host.replace(/^www\./, '');
+            }
+        }
+    }
     const temaOverride = urlParams.get('tema');
     if (temaOverride && ['MODERN_STUDIO', 'LUXURY_GOLD', 'CLEAN_MINIMALIST', 'VERTICAL_LANDING'].includes(temaOverride)) {
         document.body.setAttribute('data-theme', temaOverride);
@@ -1200,51 +1999,217 @@
     let listKaryaItems = [];
 
     const DEFAULT_PHOTOS = [
-        { url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=90", judul: "Background Sampul Utama" },
-        { url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1600&q=90", judul: "Dokumentasi Portofolio 01" },
-        { url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1600&q=90", judul: "Dokumentasi Portofolio 02" },
-        { url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1600&q=90", judul: "Dokumentasi Portofolio 03" }
     ];
+
+    // PINTU MASUK RAHASIA LOGIN KASIR / KRU
+    let logoClickCount = 0;
+    let logoClickTimer = null;
+    window.handleLogoClick = function(e) {
+        if (e) e.stopPropagation();
+        logoClickCount++;
+        clearTimeout(logoClickTimer);
+        logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1400);
+
+        if (logoClickCount >= 3) {
+            logoClickCount = 0;
+            window.bukaSecretModal();
+        }
+    };
+    window.handleDiscreetLogin = window.handleLogoClick;
+
+    window.bukaSecretModal = function() {
+        const brandName = window.ownerNamaBrand || (idParam || 'Studio');
+        const el = document.getElementById('secretModalBrandName');
+        if (el) el.innerText = brandName;
+        const modal = document.getElementById('secretLoginModal');
+        if (modal) modal.classList.add('open');
+    };
+
+    window.tutupSecretModal = function() {
+        const modal = document.getElementById('secretLoginModal');
+        if (modal) modal.classList.remove('open');
+    };
+
+    window.bukaHalamanLoginKasir = function() {
+        const host = window.location.hostname.toLowerCase();
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host.includes('.run.app');
+
+        // Jika di domain khusus brand (misal: gemilangtenda.web.app):
+        if (!isLocal && (host.includes('.web.app') || host.includes('.firebaseapp.com'))) {
+            const sub = host.split('.')[0];
+            if (sub && sub !== 'kflsagnd' && sub !== 'kafilasuci3') {
+                window.location.href = '/app';
+                return;
+            }
+        }
+
+        // Jika di domain utama kflsagnd.web.app atau localhost:
+        const targetBrand = idParam || 'kfls';
+        window.location.href = `/?brand=${encodeURIComponent(targetBrand)}&app=1`;
+    };
+
+    // Auto-buka kasir jika ada query param ?app=1 atau ?login=1
+    if (new URLSearchParams(window.location.search).get('app') === '1' || new URLSearchParams(window.location.search).get('login') === '1') {
+        bukaHalamanLoginKasir();
+    }
 
     cariDanMuatDataProfil(idParam || '');
 
+    function createDefaultFallbackData(target) {
+        const isTenda = String(target || window.location.hostname || '').toLowerCase().includes('tenda');
+        return {
+            namaBrand: isTenda ? 'Gemilang Tenda & Dekorasi' : 'Kafela Studio & Photography',
+            namaOwner: isTenda ? 'Owner Gemilang' : 'Kafela Creative',
+            username: target || (isTenda ? 'gemilangtenda' : 'kafelastudio'),
+            noWhatsApp: '6281234567890',
+            email: 'info@studio.com',
+            jenisUsaha: isTenda ? 'Sewa Tenda & Perlengkapan Acara' : 'Fotografi & Dokumentasi Acara',
+            taglineWeb: isTenda ? 'Solusi Tenda, Panggung & Perlengkapan Acara Mewah & Berkesan' : 'Abadikan Momen Indah Sekali Seumur Hidup',
+            bioWeb: isTenda
+                ? 'Melayani sewa tenda plafon, tenda roder VIP, panggung rigging, sound system, kursi, dan dekorasi pesta profesional dengan respon cepat.'
+                : 'Studio dokumentasi visual profesional melayani wedding, prewedding, wisuda, corporate event, dan potret keluarga istimewa.',
+            isWebsiteActive: true,
+            temaWeb: temaOverride || (isTenda ? 'LUXURY_GOLD' : 'MODERN_STUDIO'),
+            layoutWeb: layoutOverride || 'VERTICAL_LANDING',
+            portofolioWeb: DEFAULT_PHOTOS.map(p => p.url),
+            portofolioCaptions: DEFAULT_PHOTOS.map(p => p.judul),
+            lokasi1: 'Area Jabodetabek & Sekitarnya'
+        };
+    }
+
     async function cariDanMuatDataProfil(TargetId) {
+        const isPreviewMode = urlParams.get('preview') === '1' || Boolean(layoutOverride) || Boolean(temaOverride);
+
+        // 0. Cek draft preview di sessionStorage (Instan, offline, & 0 pemakaian kuota Firebase)
+        try {
+            const rawDraft = sessionStorage.getItem('current_owner_preview_draft');
+            if (rawDraft) {
+                const draftData = JSON.parse(rawDraft);
+                if (draftData && typeof draftData === 'object') {
+                    if (temaOverride) draftData.temaWeb = temaOverride;
+                    if (layoutOverride) draftData.layoutWeb = layoutOverride;
+                    draftData.isWebsiteActive = true;
+                    renderDataOwner(draftData);
+                    await muatKatalogPaket(draftData.ownerUid || null);
+                    return;
+                }
+            }
+        } catch (eDraft) {
+            console.warn("Draft preview cache skipped:", eDraft);
+        }
+
         try {
             let matchedDoc = null;
             const trimmedTarget = (TargetId || '').trim();
+            const uidParam = urlParams.get('uid');
 
-            if (trimmedTarget) {
-                const q = query(collection(db, "owners"), where("username", "==", trimmedTarget));
-                const querySnapshot = await getDocs(q);
-                if (!querySnapshot.empty) {
-                    matchedDoc = querySnapshot.docs[0];
-                } else {
-                    const docSnap = await getDoc(doc(db, "owners", trimmedTarget));
-                    if (docSnap.exists()) matchedDoc = docSnap;
+            // 0.1 Cek langsung dokumen owners/{uid} jika uid ada di URL
+            if (uidParam) {
+                try {
+                    const directSnap = await getDoc(doc(db, "owners", uidParam));
+                    if (directSnap.exists()) {
+                        matchedDoc = directSnap;
+                    }
+                } catch (eDirectUid) {
+                    console.warn("Direct uid check:", eDirectUid);
+                }
+            }
+
+            if (!matchedDoc && trimmedTarget) {
+                // 1. Cek langsung ke brands_registry multi-tenant
+                try {
+                    const cleanSlug = trimmedTarget.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+                    let regDoc = await getDoc(doc(db, "brands_registry", cleanSlug));
+                    if (!regDoc.exists()) {
+                        const withHyphen = cleanSlug.replace(/([a-z]+)(tenda|studio|photo|wedding|cinema|event)/, '$1-$2');
+                        if (withHyphen !== cleanSlug) {
+                            regDoc = await getDoc(doc(db, "brands_registry", withHyphen));
+                        }
+                    }
+                    if (regDoc && regDoc.exists()) {
+                        const regData = regDoc.data();
+                        if (regData.ownerId) {
+                            const ownerSnap = await getDoc(doc(db, "owners", regData.ownerId));
+                            if (ownerSnap.exists()) {
+                                matchedDoc = ownerSnap;
+                            } else {
+                                matchedDoc = {
+                                    id: regData.ownerId,
+                                    data: () => ({
+                                        namaBrand: regData.namaBrand || 'Gemilang Tenda & Dekorasi',
+                                        username: regData.slug,
+                                        noWhatsApp: regData.ownerWhatsApp || '',
+                                        email: regData.ownerEmail || '',
+                                        jenisUsaha: 'Sewa Tenda & Perlengkapan Acara',
+                                        taglineWeb: 'Solusi Tenda, Panggung & Perlengkapan Acara Mewah & Berkesan',
+                                        bioWeb: 'Melayani sewa tenda plafon, tenda roder VIP, panggung rigging, sound system, kursi, dan dekorasi pesta profesional.',
+                                        isWebsiteActive: true,
+                                        temaWeb: 'LUXURY_GOLD',
+                                        layoutWeb: 'VERTICAL_LANDING',
+                                        portofolioWeb: [
+                                            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=90',
+                                            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1600&q=90',
+                                            'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1600&q=90',
+                                            'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1600&q=90'
+                                        ],
+                                        portofolioCaptions: [
+                                            'Tenda Dekorasi VIP Eksklusif',
+                                            'Panggung Rigging & Tata Lampu',
+                                            'Tenda Roder Full AC & Karpet',
+                                            'Dekorasi Pernikahan & Pesta'
+                                        ],
+                                        lokasi1: 'Layanan Area Jabodetabek & Sekitarnya'
+                                    })
+                                };
+                            }
+                        }
+                    }
+                } catch (regErr) {
+                    console.warn("Registry lookup fallback:", regErr);
+                }
+
+                // 2. Cek query username atau doc owners
+                if (!matchedDoc) {
+                    try {
+                        const q = query(collection(db, "owners"), where("username", "==", trimmedTarget));
+                        const querySnapshot = await getDocs(q);
+                        if (!querySnapshot.empty) {
+                            matchedDoc = querySnapshot.docs[0];
+                        } else {
+                            const docSnap = await getDoc(doc(db, "owners", trimmedTarget));
+                            if (docSnap.exists()) matchedDoc = docSnap;
+                        }
+                    } catch (eOwnerQ) {
+                        console.warn("Query owner check:", eOwnerQ);
+                    }
                 }
             }
 
             if (!matchedDoc) {
-                const allOwnersSnap = await getDocs(collection(db, "owners"));
-                if (!allOwnersSnap.empty) {
-                    const cleanSlug = trimmedTarget.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    for (const dSnap of allOwnersSnap.docs) {
-                        const d = dSnap.data() || {};
-                        const uSlug = String(d.username || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                        const bSlug = String(d.namaBrand || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                        const web2Slug = d.webProfil2?.usernameSlug ? String(d.webProfil2.usernameSlug).toLowerCase().replace(/[^a-z0-9]/g, '') : '';
-                        if (
-                            (cleanSlug && (uSlug === cleanSlug || bSlug === cleanSlug || web2Slug === cleanSlug)) ||
-                            dSnap.id.toLowerCase() === trimmedTarget.toLowerCase()
-                        ) {
-                            matchedDoc = dSnap;
-                            if (web2Slug && cleanSlug === web2Slug) {
-                                window.forceWeb2Mode = true;
+                try {
+                    const allOwnersSnap = await getDocs(collection(db, "owners"));
+                    if (!allOwnersSnap.empty) {
+                        const cleanSlug = trimmedTarget.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        for (const dSnap of allOwnersSnap.docs) {
+                            const d = dSnap.data() || {};
+                            const uSlug = String(d.username || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                            const bSlug = String(d.namaBrand || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                            const web2Slug = d.webProfil2?.usernameSlug ? String(d.webProfil2.usernameSlug).toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+                            if (
+                                (cleanSlug && (uSlug === cleanSlug || bSlug === cleanSlug || web2Slug === cleanSlug)) ||
+                                dSnap.id.toLowerCase() === trimmedTarget.toLowerCase()
+                            ) {
+                                matchedDoc = dSnap;
+                                if (web2Slug && cleanSlug === web2Slug) {
+                                    window.forceWeb2Mode = true;
+                                }
+                                break;
                             }
-                            break;
                         }
+                        if (!matchedDoc) matchedDoc = allOwnersSnap.docs[0];
                     }
-                    if (!matchedDoc) matchedDoc = allOwnersSnap.docs[0];
+                } catch (eAllOwners) {
+                    console.warn("All owners lookup skipped:", eAllOwners);
                 }
             }
 
@@ -1254,17 +2219,29 @@
                 if (!idParam) idParam = data.username || ownerUid;
 
                 if (data.isWebsiteActive === false) {
-                    document.body.innerHTML = `
-                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#0F172A; color:#F8FAFC; text-align:center; padding:20px; font-family:'Plus Jakarta Sans',sans-serif;">
-                            <div style="max-width:480px; background:#1E293B; padding:36px; border-radius:24px; border:1px solid #334155; box-shadow:0 20px 40px rgba(0,0,0,0.5);">
-                                <div style="font-size:42px; margin-bottom:16px;">🔒</div>
-                                <h2 style="color:#F43F5E; font-size:22px; font-weight:800; margin-bottom:10px;">Website Sedang Ditutup</h2>
-                                <p style="font-size:14px; color:#94A3B8; line-height:1.6; margin-bottom:24px;">Website dan halaman portofolio <b>${data.namaBrand || 'Studio'}</b> sedang istirahat / ditutup sementara oleh pemilik studio.</p>
-                                <a href="https://wa.me/${data.noWhatsApp || ''}" style="display:inline-block; padding:12px 24px; background:#25D366; color:white; border-radius:12px; text-decoration:none; font-weight:bold; font-size:14px; box-shadow:0 4px 12px rgba(37,211,102,0.3);">Chat WhatsApp Admin</a>
+                    if (!isPreviewMode) {
+                        document.body.innerHTML = `
+                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#0F172A; color:#F8FAFC; text-align:center; padding:20px; font-family:'Plus Jakarta Sans',sans-serif;">
+                                <div style="max-width:480px; background:#1E293B; padding:36px; border-radius:24px; border:1px solid #334155; box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+                                    <div style="font-size:42px; margin-bottom:16px;">🔒</div>
+                                    <h2 style="color:#F43F5E; font-size:22px; font-weight:800; margin-bottom:10px;">Website Sedang Ditutup</h2>
+                                    <p style="font-size:14px; color:#94A3B8; line-height:1.6; margin-bottom:24px;">Website dan halaman portofolio <b>${data.namaBrand || 'Studio'}</b> sedang istirahat / ditutup sementara oleh pemilik studio.</p>
+                                    <a href="https://wa.me/${data.noWhatsApp || ''}" style="display:inline-block; padding:12px 24px; background:#25D366; color:white; border-radius:12px; text-decoration:none; font-weight:bold; font-size:14px; box-shadow:0 4px 12px rgba(37,211,102,0.3);">Chat WhatsApp Admin</a>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                    return;
+                        `;
+                        return;
+                    } else {
+                        // Tampilkan bar notifikasi pratinjau agar pemilik tahu status aslinya tutup
+                        let pNotice = document.getElementById('previewNoticeBanner');
+                        if (!pNotice) {
+                            pNotice = document.createElement('div');
+                            pNotice.id = 'previewNoticeBanner';
+                            pNotice.style.cssText = 'position:sticky; top:0; z-index:99999; background:#e11d48; color:white; font-size:11px; font-weight:800; text-align:center; padding:7px 12px; letter-spacing:0.04em; box-shadow:0 2px 10px rgba(0,0,0,0.4);';
+                            pNotice.innerText = '⚠️ PRATINJAU DESAIN (Status Asli Website: Sedang Ditutup di Pengaturan)';
+                            document.body.prepend(pNotice);
+                        }
+                    }
                 }
 
                 // Cek apakah halaman ini diminta sebagai Web Profil Ke-2
@@ -1324,23 +2301,56 @@
 
                 renderDataOwner(data);
                 if (ownerUid) await muatKatalogPaket(ownerUid);
+            } else {
+                // Gunakan data fallback jika tidak ada dokumen yang cocok
+                const fallbackData = createDefaultFallbackData(trimmedTarget);
+                renderDataOwner(fallbackData);
+                await muatKatalogPaket(null);
             }
         } catch (error) {
-            console.error("Error muat data:", error);
+            console.error("Error muat data (menggunakan fallback otomatis):", error);
+            const fallbackData = createDefaultFallbackData(TargetId);
+            renderDataOwner(fallbackData);
+            await muatKatalogPaket(null);
         }
     }
 
     function renderDataOwner(data) {
-        // Tentukan layout: HORIZONTAL_BOOK vs VERTICAL_LANDING
+        // Tentukan layout: 8 pilihan arsitektur unik
         const layoutDipilih = layoutOverride || data.layoutWeb || (data.temaWeb === 'VERTICAL_LANDING' ? 'VERTICAL_LANDING' : 'HORIZONTAL_BOOK');
-        if (layoutDipilih === 'VERTICAL_LANDING') {
+        document.documentElement.setAttribute('data-layout', layoutDipilih);
+        document.body.setAttribute('data-layout', layoutDipilih);
+
+        // Atur layout-vertical untuk mode scroll ke bawah
+        if (layoutDipilih !== 'HORIZONTAL_BOOK' && layoutDipilih !== 'CAROUSEL_FULLSCREEN') {
             document.documentElement.classList.add('layout-vertical');
             document.body.classList.add('layout-vertical');
-            document.body.setAttribute('data-layout', 'VERTICAL_LANDING');
         } else {
             document.documentElement.classList.remove('layout-vertical');
             document.body.classList.remove('layout-vertical');
-            document.body.removeAttribute('data-layout');
+        }
+
+        // Tampilkan badge/elemen layout khusus jika aktif
+        const cinBadge = document.getElementById('cinematicBadgeEl');
+        if (cinBadge) {
+            cinBadge.style.display = layoutDipilih === 'CINEMATIC_SHOWCASE' ? 'inline-flex' : 'none';
+        }
+        const ticker = document.getElementById('brutalistTicker');
+        if (ticker) {
+            ticker.style.display = layoutDipilih === 'RETRO_BRUTALIST' ? 'block' : 'none';
+        }
+        const masonFilter = document.getElementById('masonryFilterBar');
+        if (masonFilter) {
+            masonFilter.style.display = layoutDipilih === 'GRID_MASONRY' ? 'flex' : 'none';
+        }
+        const prevArrow = document.getElementById('carouselPrevBtn');
+        const nextArrow = document.getElementById('carouselNextBtn');
+        const drawerTrigger = document.getElementById('carouselBottomDrawerTrigger');
+        if (prevArrow && nextArrow && drawerTrigger) {
+            const isCarousel = layoutDipilih === 'CAROUSEL_FULLSCREEN';
+            prevArrow.style.display = isCarousel ? 'flex' : 'none';
+            nextArrow.style.display = isCarousel ? 'flex' : 'none';
+            drawerTrigger.style.display = isCarousel ? 'flex' : 'none';
         }
 
         const temaAktif = temaOverride || data.temaWeb || (layoutDipilih === 'VERTICAL_LANDING' ? 'VERTICAL_LANDING' : 'MODERN_STUDIO');
@@ -1495,20 +2505,31 @@
             });
         }
 
-        // Media Sosial dengan Logo SVG Resmi
-        const svgIg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`;
-        const svgTiktok = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>`;
+        // Media Sosial & Kontak dengan Logo SVG Resmi (Hanya Logo Saja)
+        const svgIg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`;
+        const svgTiktok = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a4 4 0 0 0-4 4"></path></svg>`;
+        const svgWa = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`;
+        const svgEmail = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`;
 
         let htmlSosmed = "";
         if (data.linkIg && data.linkIg.trim() !== "") {
             let urlIg = data.linkIg.trim();
             if (!urlIg.startsWith('http')) urlIg = 'https://instagram.com/' + urlIg.replace('@', '');
-            htmlSosmed += `<a href="${urlIg}" target="_blank" rel="noopener noreferrer" class="social-btn btn-ig">${svgIg} <span>Instagram</span></a>`;
+            htmlSosmed += `<a href="${urlIg}" target="_blank" rel="noopener noreferrer" class="social-btn btn-ig" title="Instagram">${svgIg}</a>`;
         }
         if (data.linkTiktok && data.linkTiktok.trim() !== "") {
             let urlTiktok = data.linkTiktok.trim();
             if (!urlTiktok.startsWith('http')) urlTiktok = 'https://tiktok.com/@' + urlTiktok.replace('@', '');
-            htmlSosmed += `<a href="${urlTiktok}" target="_blank" rel="noopener noreferrer" class="social-btn btn-tiktok">${svgTiktok} <span>TikTok</span></a>`;
+            htmlSosmed += `<a href="${urlTiktok}" target="_blank" rel="noopener noreferrer" class="social-btn btn-tiktok" title="TikTok">${svgTiktok}</a>`;
+        }
+        if (data.noWhatsApp && data.noWhatsApp.trim() !== "") {
+            let cleanWa = data.noWhatsApp.replace(/[^0-9]/g, '');
+            if (cleanWa.startsWith('0')) cleanWa = '62' + cleanWa.substring(1);
+            htmlSosmed += `<a href="https://wa.me/${cleanWa}" target="_blank" rel="noopener noreferrer" class="social-btn btn-wa" title="WhatsApp">${svgWa}</a>`;
+        }
+        if (data.email && data.email.trim() !== "") {
+            let cleanEmail = data.email.trim();
+            htmlSosmed += `<a href="mailto:${cleanEmail}" target="_blank" rel="noopener noreferrer" class="social-btn btn-email" title="Email">${svgEmail}</a>`;
         }
         if (htmlSosmed !== "") {
             document.querySelectorAll('.js-block-sosmed').forEach(el => {
@@ -1587,15 +2608,43 @@
     async function muatKatalogPaket(uid) {
         const amGrid = document.getElementById('amServicesGrid');
         try {
-            const paketSnap = await getDocs(collection(db, "owners", uid, "paket_layanan"));
-            if (paketSnap.empty) {
-                amGrid.innerHTML = `<p style="text-align:center; color: var(--am-muted); grid-column: 1/-1; padding: 32px;">Silakan klik tombol Booking Online untuk konsultasi layanan kami langsung.</p>`;
-                return;
+            let listPaket = [];
+            if (uid) {
+                const cacheKey = 'cached_paket_' + uid;
+                try {
+                    const cached = sessionStorage.getItem(cacheKey);
+                    if (cached) {
+                        listPaket = JSON.parse(cached);
+                    }
+                } catch (eCache) {}
+
+                if (listPaket.length === 0) {
+                    const paketSnap = await getDocs(collection(db, "owners", uid, "paket_layanan"));
+                    if (!paketSnap.empty) {
+                        paketSnap.forEach(d => listPaket.push(d.data()));
+                        listPaket.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+                        try {
+                            sessionStorage.setItem(cacheKey, JSON.stringify(listPaket));
+                        } catch (eSave) {}
+                    }
+                }
             }
 
-            let listPaket = [];
-            paketSnap.forEach(d => listPaket.push(d.data()));
-            listPaket.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+            if (listPaket.length === 0) {
+                const isTendaOrEvent = (window.ownerNamaBrand || '').toLowerCase().includes('tenda') || 
+                                       (window.ownerNamaBrand || '').toLowerCase().includes('dekor');
+                listPaket = isTendaOrEvent ? [
+                    { namaPaket: 'Paket Tenda Roder VIP Full AC & Flooring', hargaPaket: 15000000, deskripsiPaket: 'Tenda bentang besar tanpa tiang tengah, kain plafon satin mewah, pendingin AC standing, lampu kristal & karpet premium.' },
+                    { namaPaket: 'Paket Tenda Plafon Dekorasi Eksklusif', hargaPaket: 7500000, deskripsiPaket: 'Tenda dekorasi serut kombinasi warna, tirai pembatas VIP, instalasi listrik penerangan komplit & kipas blower kabut.' },
+                    { namaPaket: 'Paket Panggung Rigging & Sound System', hargaPaket: 5000000, deskripsiPaket: 'Panggung kokoh multiplek karpet, backdrop rigging truss, lighting parled, dan audio profesional untuk resepsi.' },
+                    { namaPaket: 'Paket Kursi Futura, Meja & Perlengkapan', hargaPaket: 3000000, deskripsiPaket: '100 pcs kursi futura cover ketat pita, meja prasmanan dekor, meja tamu, kotak angpao, dan standing thermogun.' }
+                ] : [
+                    { namaPaket: 'Paket Wedding All-Day Documentation', hargaPaket: 8500000, deskripsiPaket: 'Liputan akad & resepsi seharian penuh, 2 fotografer + 2 videografer, teaser 1 menit + video sinematik 5-7 menit, album kolase 20 hal.' },
+                    { namaPaket: 'Paket Prewedding Outdoor & Studio', hargaPaket: 4500000, deskripsiPaket: 'Sesi foto indoor studio & outdoor, 3 gaun/kostum, makeup artist profesional, 1 cetak canvas 40x60 frame kayu minimalis.' },
+                    { namaPaket: 'Paket Wisuda & Family Portrait VIP', hargaPaket: 1500000, deskripsiPaket: 'Sesi studio privat 60 menit, bebas ganti baju & pose, 10 foto editan resolusi tinggi, cetak 10R framed.' },
+                    { namaPaket: 'Paket Dokumentasi Event / Gathering', hargaPaket: 3000000, deskripsiPaket: 'Liputan setengah hari (hingga 5 jam), all master foto high-res Google Drive, video highlight 1 menit vertikal untuk medsos.' }
+                ];
+            }
 
             let htmlAmour = "";
             listPaket.forEach((p, idx) => {

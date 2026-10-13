@@ -92,6 +92,33 @@ export interface RekeningModel {
 export type PenempatanLogoMode = 'KEDUANYA' | 'SAMPING' | 'WATERMARK' | 'TIDAK_TAMPIL';
 export type PaketLanggananTier = 'Starter' | 'Pro' | 'Ultimate';
 export type UserRoleType = 'owner' | 'admin' | 'anggota';
+export type BrandStatusType = 'AKTIF' | 'SUSPENDED' | 'TRIAL';
+
+export interface BrandRegistryItem {
+  id: string; // usually slug
+  slug: string; // e.g. "kfls"
+  namaBrand: string; // e.g. "Kafela Studio"
+  ownerId: string; // Firebase UID / Document ID di /owners/{ownerId}
+  ownerEmail?: string;
+  ownerWhatsApp?: string;
+  customDomain?: string; // e.g. "kflsagnd.web.app" or "brand.web.app" or "studioanda.com"
+  tier: PaketLanggananTier; // "Starter" | "Pro" | "Ultimate"
+  status: BrandStatusType;
+  maxJadwal?: number;
+  createdAt: number;
+  expiredAt: number; // timestamp ms
+  catatan?: string;
+}
+
+export type WebLayoutType =
+  | 'HORIZONTAL_BOOK' // 1. Buku Editorial Majalah (Geser Samping)
+  | 'VERTICAL_LANDING' // 2. Landing Page Modern (Scroll Vertikal)
+  | 'CINEMATIC_SHOWCASE' // 3. Sinematik Layar Lebar 21:9 & Moodboard Gelap
+  | 'GRID_MASONRY' // 4. Galeri Masonry & Moodboard Estetik
+  | 'SPLIT_EDITORIAL' // 5. Split-Screen Dual-Pane Atelier
+  | 'MINIMAL_LINKTREE' // 6. Bio-Link Premium & Quick Accordion
+  | 'CAROUSEL_FULLSCREEN' // 7. Fullscreen Slide Imersif & Bottom Sheet
+  | 'RETRO_BRUTALIST'; // 8. Neo-Brutalist & Pop Studio Modern
 
 export interface WebProfilSekunder {
   aktif: boolean;
@@ -100,10 +127,14 @@ export interface WebProfilSekunder {
   usernameSlug?: string;
   taglineWeb?: string;
   bioWeb?: string;
+  email?: string;
+  noWhatsApp?: string;
   linkIg?: string;
   linkTiktok?: string;
+  linkYoutube?: string;
+  linkFacebook?: string;
   temaWeb?: 'MODERN_STUDIO' | 'LUXURY_GOLD' | 'CLEAN_MINIMALIST' | 'VERTICAL_LANDING';
-  layoutWeb?: 'HORIZONTAL_BOOK' | 'VERTICAL_LANDING';
+  layoutWeb?: WebLayoutType;
   portofolioWeb?: string[];
   portofolioCaptions?: string[];
   linkBookingKhusus?: string; // jika diisi, pakai link ini; jika kosong, pakai booking bawaan
@@ -118,6 +149,7 @@ export interface OwnerProfile {
   namaOwner: string;
   namaBrand: string;
   noWhatsApp: string;
+  email?: string;
   jenisUsaha: string;
   paketAktif: PaketLanggananTier;
   tanggalDaftar: number;
@@ -127,6 +159,8 @@ export interface OwnerProfile {
   bioWeb?: string;
   linkIg: string;
   linkTiktok: string;
+  linkYoutube?: string;
+  linkFacebook?: string;
   lokasi1: string;
   lokasi2: string;
   lokasi3: string;
@@ -136,7 +170,7 @@ export interface OwnerProfile {
   portofolioWeb: string[];
   portofolioCaptions?: string[];
   temaWeb?: 'MODERN_STUDIO' | 'LUXURY_GOLD' | 'CLEAN_MINIMALIST' | 'VERTICAL_LANDING';
-  layoutWeb?: 'HORIZONTAL_BOOK' | 'VERTICAL_LANDING';
+  layoutWeb?: WebLayoutType;
   pesanPenutupWeb?: string;
   jamOperasionalWeb?: string;
   ctaTeksKustom?: string;

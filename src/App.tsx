@@ -23,6 +23,7 @@ import {
   Receipt,
   RefreshCw,
   Search,
+  Server,
   Settings,
   Sliders,
   Smartphone,
@@ -34,6 +35,7 @@ import {
 } from 'lucide-react';
 import {
   AnggotaTimModel,
+  BrandRegistryItem,
   JadwalFotografi,
   OwnerProfile,
   PaketLanggananTier,
@@ -62,6 +64,7 @@ import {
   deleteJadwalFromFirebase,
   deletePaketFromFirebase,
   deleteTimFromFirebase,
+  fetchBrandBySlugOrDomain,
   fetchOwnerWorkspaceFromFirebase,
   listenFirebaseAuthState,
   logoutFirebaseSession,
@@ -72,7 +75,9 @@ import {
   saveRekeningToFirebase,
   saveTimToFirebase,
   subscribeLiveJadwalUltimate,
+  initKafelaFirebase,
 } from './services/firebaseClient';
+import { doc, getDoc } from 'firebase/firestore';
 import {
   OfflineIndicator,
   PWAInstallButton,
@@ -82,6 +87,7 @@ import { LoginAndSetupScreen } from './components/LoginAndSetupScreen';
 import { StrukModal } from './components/StrukModal';
 import { SignatureAndLogoModal } from './components/SignatureAndLogoModal';
 import { ScheduleAndCashierForm } from './components/ScheduleAndCashierForm';
+import { SuperAdminDashboard } from './components/SuperAdminDashboard';
 import {
   ArsipPencarianView,
   KelolaTimView,
@@ -154,6 +160,38 @@ export default function App() {
       if (saved) return saved;
     } catch {}
     return 'PROFIL';
+  });
+
+  // Mode Tampilan: Kasir Studio atau Super Admin Master Console
+  const [viewMode, setViewMode] = useState<'CASHIER' | 'SUPER_ADMIN'>(() => {
+    if (typeof window === 'undefined') return 'CASHIER';
+    const path = window.location.pathname.toLowerCase();
+    const search = new URLSearchParams(window.location.search);
+    return (
+      path.includes('super-admin') ||
+      search.get('mode') === 'super-admin' ||
+      search.get('page') === 'super-admin' ||
+      search.get('super_admin') === '1'
+    )
+      ? 'SUPER_ADMIN'
+      : 'CASHIER';
+  });
+
+  const [activeBrandSlug, setActiveBrandSlug] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'kfls';
+    const params = new URLSearchParams(window.location.search);
+    const querySlug = params.get('brand') || params.get('b');
+    if (querySlug) return querySlug;
+
+    const host = window.location.hostname.toLowerCase();
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || host.includes('.run.app');
+    if (!isLocal && host.includes('.web.app')) {
+      const sub = host.split('.')[0];
+      if (sub && sub !== 'kflsagnd' && sub !== 'kafilasuci3') {
+        return sub;
+      }
+    }
+    return 'kfls';
   });
 
   const [targetOwnerId, setTargetOwnerId] = useState<string>(() => {
@@ -247,6 +285,7 @@ export default function App() {
   });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const [isPaketExpanded, setIsPaketExpanded] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -255,6 +294,99 @@ export default function App() {
       sessionStorage.setItem('KAFELA_SUB_TAB', pengaturanSubTab);
     } catch {}
   }, [activeTab, pengaturanSubTab]);
+
+  // Resolusi brand otomatis & proteksi halaman profil publik
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+    const host = window.location.hostname.toLowerCase();
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || host.includes('.run.app');
+
+    let sub = '';
+    if (!isLocal) {
+      if (host.includes('.web.app')) {
+        sub = host.split('.web.app')[0].split('.').pop() || '';
+      } else if (host.includes('.firebaseapp.com')) {
+        sub = host.split('.firebaseapp.com')[0].split('.').pop() || '';
+      } else if (host !== 'kflsagnd.web.app' && host !== 'kafilasuci3.web.app') {
+        sub = host.replace(/^www\./, '');
+      }
+    }
+
+    // Jika pengunjung membuka domain khusus brand (bukan portal kflsagnd) tanpa rute /app atau parameter app=1,
+    // langsung alihkan ke Web Profil Brand agar pengunjung tidak melihat formulir login kasir!
+    const isKasirExplicit =
+      path === 'app' ||
+      path.endsWith('/app') ||
+      path.includes('/app') ||
+      params.get('app') === '1' ||
+      params.get('mode') === 'super-admin' ||
+      params.get('super_admin') === '1';
+
+    if (sub && sub !== 'kflsagnd' && sub !== 'kafilasuci3' && !isKasirExplicit) {
+      const search = window.location.search || '';
+      window.location.replace(`/profil.html?id=${encodeURIComponent(sub)}${search ? '&' + search.replace(/^\?/, '') : ''}`);
+      return;
+    }
+
+    let slugCandidate = params.get('brand') || params.get('b');
+    if (!slugCandidate && path && path.includes('/app')) {
+      const parts = path.split('/');
+      if (parts.length > 1 && parts[0] !== 'app') {
+        slugCandidate = parts[0];
+      }
+    }
+    if (!slugCandidate && sub && sub !== 'kflsagnd' && sub !== 'kafilasuci3') {
+      slugCandidate = sub;
+    }
+
+    if (slugCandidate) {
+      setActiveBrandSlug(slugCandidate);
+      fetchBrandBySlugOrDomain(slugCandidate).then((found) => {
+        if (found) {
+          setTargetOwnerId(found.ownerId);
+          setOwner((prev) => ({
+            ...prev,
+            namaBrand: found.namaBrand,
+            username: found.slug,
+            paketAktif: found.tier,
+            noWhatsApp: found.ownerWhatsApp || prev.noWhatsApp,
+          }));
+        }
+      });
+    }
+  }, []);
+
+  const handleSelectBrandForCashier = async (brand: BrandRegistryItem) => {
+    setActiveBrandSlug(brand.slug);
+    setTargetOwnerId(brand.ownerId);
+    setOwner((prev) => ({
+      ...prev,
+      namaBrand: brand.namaBrand,
+      username: brand.slug,
+      paketAktif: brand.tier,
+      noWhatsApp: brand.ownerWhatsApp || prev.noWhatsApp,
+    }));
+    if (!sessionMode) {
+      setSessionMode('DEMO');
+    } else if (sessionMode === 'FIREBASE') {
+      try {
+        const remote = await fetchOwnerWorkspaceFromFirebase(brand.ownerId);
+        if (remote && remote.owner) {
+          setOwner(remote.owner);
+          setPaketList(remote.paketList || []);
+          setJadwalAktif(remote.jadwalAktif || []);
+          setJadwalArsip(remote.jadwalArsip || []);
+          setRekening(remote.rekening || initialDemo.rekening);
+          setTimList(remote.timList || []);
+        }
+      } catch (e) {
+        console.warn('Gagal memuat workspace brand:', e);
+      }
+    }
+    setViewMode('CASHIER');
+  };
 
   const [isMobileLayout, setIsMobileLayout] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -701,6 +833,23 @@ export default function App() {
     setUserRole(fbSession.role);
     setActiveUserName(fbSession.displayName);
     setSessionMode('FIREBASE');
+
+    // Cek Role Super Admin di koleksi 'users' ATAU 'owners'
+    const fb = initKafelaFirebase();
+    if (fb) {
+      try {
+        const userDoc = await getDoc(doc(fb.db, 'users', fbSession.uid));
+        const ownerDoc = await getDoc(doc(fb.db, 'owners', fbSession.uid));
+        if (
+          (userDoc.exists() && userDoc.data().role === 'superadmin') ||
+          (ownerDoc.exists() && ownerDoc.data().role === 'superadmin')
+        ) {
+          setViewMode('SUPER_ADMIN');
+        }
+      } catch (e) {
+        console.warn('Gagal cek superadmin:', e);
+      }
+    }
 
     // Jika ini hanya Reload Halaman (F5) dan Cache lokal untuk Owner ini masih segar (< 5 menit),
     // gunakan langsung Cache lokal (0 Read ke server!) agar super hemat kuota dan instan!
@@ -1330,12 +1479,32 @@ export default function App() {
     );
   }
 
+  // Jika mode Super Admin Master Console aktif
+  if (viewMode === 'SUPER_ADMIN') {
+    return (
+      <SuperAdminDashboard
+        onSelectBrandForCashier={handleSelectBrandForCashier}
+        onExitSuperAdmin={() => {
+          setViewMode('CASHIER');
+          if (typeof window !== 'undefined' && window.history.pushState) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('mode');
+            url.searchParams.delete('super_admin');
+            url.pathname = '/';
+            window.history.pushState({}, '', url.toString());
+          }
+        }}
+      />
+    );
+  }
+
   // Jika belum login setelah pengecekan selesai, tampilkan Halaman Login
   if (!sessionMode) {
     return (
       <LoginAndSetupScreen
         onStartDemo={handleStartDemo}
         onLoginFirebaseSuccess={(s) => handleLoginFirebaseSuccess(s, false)}
+        onOpenSuperAdmin={() => setViewMode('SUPER_ADMIN')}
       />
     );
   }
@@ -1680,6 +1849,7 @@ export default function App() {
         <div className="my-2 border-t border-white/10" />
 
         <div className="px-2 py-1 space-y-2">
+
           <PWAInstallButton />
         </div>
       </div>
@@ -1931,6 +2101,20 @@ export default function App() {
                 )}
               </button>
             )}
+
+            {/* Tombol Lihat Web Profil Publik Brand Ini */}
+            <a
+              href={`/profil.html?id=${encodeURIComponent(owner.username || activeBrandSlug || 'kfls')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white/90 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 transition-all shadow-xs"
+              title="Buka Website Profil Publik Brand Ini"
+            >
+              <Globe className="w-3.5 h-3.5 text-sky-400" />
+              <span>Web Publik</span>
+            </a>
+
+
           </div>
         </header>
 
@@ -2304,7 +2488,7 @@ export default function App() {
                             d="M 3,5 L 8,19 L 12,12 L 16,19 L 21,5 L 17,5 L 14,14 L 12,10 L 10,14 L 7,5 Z"
                           />
                         </svg>
-                        <span>Booking Web </span>
+                        <span>Web </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0">
@@ -2458,7 +2642,7 @@ export default function App() {
                     {/* Spam button removed as requested */}
                   </div>
 
-                  {!isMobileLayout && !isKruAnggota && (
+                  {!isKruAnggota && (
                     <button
                       type="button"
                       onClick={() => {
@@ -2474,65 +2658,7 @@ export default function App() {
                   )}
                 </div>
 
-                {/* KHUSUS LAYAR PC: Bar Filter Status di Atas Daftar Jadwal agar Mudah Dijangkau */}
-                {!isMobileLayout && (
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {(
-                      [
-                        {
-                          id: 'SEMUA_BULAN',
-                          label: `Semua Bulan Ini (${ringkasanBulanIni.totalEventBulanIni})`,
-                          activeBg: '#2980B9',
-                        },
-                        {
-                          id: 'BELUM_LUNAS',
-                          label: `Belum Lunas (${
-                            ringkasanBulanIni.jmlBookingBaru + ringkasanBulanIni.jmlSudahDp
-                          })`,
-                          activeBg: '#E67E22',
-                        },
-                        {
-                          id: 'SUDAH_DP',
-                          label: `Sudah DP (${ringkasanBulanIni.jmlSudahDp})`,
-                          activeBg: '#E74C3C',
-                        },
-                        {
-                          id: 'BOOKING_BARU',
-                          label: `Booking (${ringkasanBulanIni.jmlBookingBaru})`,
-                          activeBg: '#F39C12',
-                        },
-                        {
-                          id: 'LUNAS',
-                          label: `Lunas (${ringkasanBulanIni.jmlLunas})`,
-                          activeBg: '#27AE60',
-                        },
-                      ] as const
-                    ).map((f) => {
-                      const isActive = statusFilter === f.id;
-                      return (
-                        <button
-                          key={f.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedDateStr(null);
-                            setStatusFilter(f.id);
-                            bumpCacheHit();
-                          }}
-                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs"
-                          style={{
-                            backgroundColor: isActive ? f.activeBg : 'rgba(0, 0, 0, 0.35)',
-                            color: '#FFFFFF',
-                            border: isActive
-                              ? '1px solid rgba(255, 255, 255, 0.5)'
-                              : '1px solid rgba(255, 255, 255, 0.12)',
-                          }}
-                        >
-                          {f.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+             
 
                 {/* Panel Khusus Pesanan Form Web yang Belum Dikonfirmasi (Hanya untuk Owner & Admin) */}
                 {!isKruAnggota && pesananWebPadaTanggalDipilih.length > 0 && (
@@ -2662,7 +2788,7 @@ export default function App() {
                             className="px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-[#2980B9] hover:opacity-95 shadow cursor-pointer flex items-center gap-1.5"
                           >
                             <Plus className="w-4 h-4" />
-                            <span>Tambah Jadwal di Tanggal Ini</span>
+                            <span>Tambah Event di Tanggal Ini</span>
                           </button>
                         )}
                         {ringkasanBulanIni.totalEventBulanIni > 0 &&
@@ -2675,7 +2801,7 @@ export default function App() {
                               }}
                               className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/15 border border-white/15 cursor-pointer"
                             >
-                              Lihat Semua Bulan Ini ({ringkasanBulanIni.totalEventBulanIni} Item)
+                              Event Bulan Ini ({ringkasanBulanIni.totalEventBulanIni} Item)
                             </button>
                           )}
                       </div>
@@ -2863,33 +2989,11 @@ export default function App() {
                   <div className="mt-3 pt-2.5 border-t border-white/15 flex flex-wrap items-center gap-1.5">
                     {(
                       [
-                        {
-                          id: 'SEMUA_BULAN',
-                          label: `Semua Bulan Ini (${ringkasanBulanIni.totalEventBulanIni})`,
-                          activeBg: '#2980B9',
-                        },
-                        {
-                          id: 'BELUM_LUNAS',
-                          label: `Belum Lunas (${
-                            ringkasanBulanIni.jmlBookingBaru + ringkasanBulanIni.jmlSudahDp
-                          })`,
-                          activeBg: '#E67E22',
-                        },
-                        {
-                          id: 'SUDAH_DP',
-                          label: `Sudah DP (${ringkasanBulanIni.jmlSudahDp})`,
-                          activeBg: '#E74C3C',
-                        },
-                        {
-                          id: 'BOOKING_BARU',
-                          label: `Booking (${ringkasanBulanIni.jmlBookingBaru})`,
-                          activeBg: '#F39C12',
-                        },
-                        {
-                          id: 'LUNAS',
-                          label: `Lunas (${ringkasanBulanIni.jmlLunas})`,
-                          activeBg: '#27AE60',
-                        },
+                        { id: 'SEMUA_BULAN', label: 'Semua', activeBg: '#2980B9' },
+                        { id: 'TANGGAL_DIPILIH', label: 'Tanggal Ini', activeBg: '#8E44AD' },
+                        { id: 'LUNAS', label: 'Lunas', activeBg: '#27AE60' },
+                        { id: 'SUDAH_DP', label: 'Sudah DP', activeBg: '#D35400' },
+                        { id: 'BELUM_LUNAS', label: 'Belum Lunas', activeBg: '#C0392B' },
                       ] as const
                     ).map((f) => {
                       const isActive = statusFilter === f.id;
@@ -4181,10 +4285,10 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">
-                    Pilihan Paket &amp; Perpanjang Langganan
+                    Perpanjang Langganan
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Kafela&apos;s Agenda • Hubungi Admin via WhatsApp untuk Aktivasi Cepat
+                   Hubungi Admin via WhatsApp untuk Aktivasi Cepat
                   </p>
                 </div>
               </div>
@@ -4221,8 +4325,7 @@ export default function App() {
             {/* Toggle Durasi: Bulanan vs Tahunan */}
             <div className="flex items-center justify-between pt-1">
               <div>
-                <span className="text-xs font-bold text-white/90 block">Pilih Skema Durasi:</span>
-                <span className="text-[11px] text-slate-400">Pilih durasi sebelum chat ke admin</span>
+                <span className="text-xs font-bold text-white/90 block">Pilih Durasi:</span>
               </div>
               <div className="flex items-center p-1 rounded-xl bg-black/50 border border-white/15 text-xs">
                 <button
@@ -4253,8 +4356,17 @@ export default function App() {
               </div>
             </div>
 
-            {/* Kartu Pilihan Paket (Starter, Pro, Ultimate) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            <button
+              type="button"
+              onClick={() => setIsPaketExpanded(!isPaketExpanded)}
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-800/50 border border-slate-700 text-white font-bold text-sm cursor-pointer hover:bg-slate-700/50 transition-all"
+            >
+              <span>{isPaketExpanded ? 'Tutup Pilihan Paket' : 'Pilih Paket Langganan'}</span>
+              <span>{isPaketExpanded ? '▲' : '▼'}</span>
+            </button>
+
+            {isPaketExpanded && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mt-4">
               {[
                 {
                   tier: 'Starter' as const,
@@ -4376,6 +4488,7 @@ export default function App() {
                 );
               })}
             </div>
+            )}
 
             {/* Tombol Utama Chat Admin WhatsApp untuk Perpanjangan */}
             <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">

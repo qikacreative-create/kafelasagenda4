@@ -24,7 +24,15 @@
     <script>
       (function () {
         var path = window.location.pathname.replace(/^\/+|\/+$/g, '');
-        var extraQuery = window.location.search ? '&' + window.location.search.substring(1) : '';
+        var search = window.location.search || '';
+        var extraQuery = search ? '&' + search.substring(1) : '';
+
+        // 1. Rute Khusus Super Admin: jangan redirect ke profil.html
+        if (path === 'super-admin' || search.indexOf('mode=super-admin') !== -1 || search.indexOf('super_admin=1') !== -1) {
+          return;
+        }
+
+        // 2. Rute Booking Web Publik: /b/:slug -> /booking.html?id=:slug
         if (path.indexOf('b/') === 0) {
           var bookingUser = path.substring(2).replace(/^\/+|\/+$/g, '');
           if (bookingUser && bookingUser.indexOf('/') === -1) {
@@ -32,8 +40,41 @@
             return;
           }
         }
-        if (path && path !== 'index.html' && path.indexOf('/') === -1 && path.indexOf('.') === -1) {
+
+        // 3. Rute Privat Kasir & Agenda: /app, :slug/app, atau ?app=1 -> Tetap di App.tsx (buka kasir)
+        if (path === 'app' || path.endsWith('/app') || path.indexOf('/app') !== -1 || search.indexOf('app=1') !== -1 || search.indexOf('brand=') !== -1) {
+          return;
+        }
+
+        var host = window.location.hostname.toLowerCase();
+        var isLocal = host === 'localhost' || host === '127.0.0.1' || host.indexOf('.run.app') !== -1;
+        if (!isLocal) {
+          var sub = '';
+          if (host.indexOf('.web.app') !== -1) {
+            sub = host.split('.web.app')[0].split('.').pop();
+          } else if (host.indexOf('.firebaseapp.com') !== -1) {
+            sub = host.split('.firebaseapp.com')[0].split('.').pop();
+          } else if (host !== 'kflsagnd.web.app' && host !== 'kafilasuci3.web.app') {
+            sub = host.replace(/^www\./, '');
+          }
+
+          if (sub && sub !== 'kflsagnd' && sub !== 'kafilasuci3') {
+            if (path === 'b' || path === 'booking') {
+              window.location.replace('/booking.html?id=' + encodeURIComponent(sub) + extraQuery);
+              return;
+            }
+            // Jika pengunjung membuka root (/) atau /index.html, langsung buka PROFIL BRAND!
+            if (!path || path === 'index.html') {
+              window.location.replace('/profil.html?id=' + encodeURIComponent(sub) + extraQuery);
+              return;
+            }
+          }
+        }
+
+        // 5. Deteksi Rute Web Profil Brand Publik di domain utama: /:slug -> /profil.html?id=:slug
+        if (path && path !== 'index.html' && path !== 'app' && path.indexOf('/') === -1 && path.indexOf('.') === -1) {
           window.location.replace('/profil.html?id=' + encodeURIComponent(path) + extraQuery);
+          return;
         }
       })();
     </script>

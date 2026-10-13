@@ -26,6 +26,7 @@ import {
 } from 'firebase/firestore';
 import {
   AnggotaTimModel,
+  BrandRegistryItem,
   FirebaseCustomConfig,
   JadwalFotografi,
   OwnerProfile,
@@ -223,11 +224,22 @@ export async function signupFirebaseWithWA(
     throw new Error('Konfigurasi Firebase belum siap.');
   }
 
-  let waBersih = waInput.replace(/[^0-9]/g, '');
-  if (waBersih.startsWith('62')) {
-    waBersih = '0' + waBersih.substring(2);
+  const emailSistem = idKeEmailSistem(waInput);
+  if (!emailSistem || !emailSistem.includes('@') || emailSistem.startsWith('@')) {
+    throw new Error('Format Nomor WhatsApp atau Email tidak valid.');
   }
-  const emailSistem = `${waBersih}@kafelaagenda.com`;
+
+  const isEmailInput = waInput.includes('@') && waInput.includes('.');
+  let waBersih = waInput;
+  if (!isEmailInput) {
+    waBersih = waInput.replace(/[^0-9]/g, '');
+    if (waBersih.startsWith('62')) {
+      waBersih = '0' + waBersih.substring(2);
+    }
+    if (!waBersih || waBersih.length < 9) {
+      throw new Error('Nomor WhatsApp terlalu pendek atau tidak valid.');
+    }
+  }
   const cred = await createUserWithEmailAndPassword(fb.auth, emailSistem, password);
   const uid = cred.user.uid;
   const masaTrialMillis = Date.now() + 10 * 24 * 60 * 60 * 1000;
@@ -405,6 +417,7 @@ export async function fetchOwnerWorkspaceFromFirebase(
     namaOwner: (oData.namaOwner as string) || 'Owner',
     namaBrand: rawBrand,
     noWhatsApp: (oData.noWhatsApp as string) || '',
+    email: (oData.email as string) || '',
     jenisUsaha: (oData.jenisUsaha as string) || 'Fotografi & Studio Foto',
     paketAktif: ((oData.paketAktif as string) || 'Pro') as OwnerProfile['paketAktif'],
     tanggalDaftar: Number(oData.tanggalDaftar) || Date.now(),
@@ -1019,4 +1032,767 @@ function mapFirestoreDocToJadwal(id: string, d: Record<string, unknown>): Jadwal
     woKoordinasi: d.woKoordinasi as JadwalFotografi['woKoordinasi'],
   };
 }
+
+// ============================================================================
+// BRAND REGISTRY (MULTI-TENANT & SUPER ADMIN 30+ BRANDS)
+// ============================================================================
+
+const LOCAL_KEY_BRANDS_REGISTRY = 'KAFELA_BRANDS_REGISTRY_V1';
+
+export const SEED_BRANDS_REGISTRY: BrandRegistryItem[] = [
+  {
+    id: 'kfls',
+    slug: 'kfls',
+    namaBrand: "Kafela's Agenda",
+    ownerId: 'demo-owner-kafela-001',
+    ownerEmail: 'qikacreative@gmail.com',
+    ownerWhatsApp: '081234567890',
+    customDomain: 'kflsagnd.web.app',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 90 * 86400000,
+    expiredAt: Date.now() + 365 * 86400000,
+    catatan: 'Brand Utama Platform (Flagship Studio)',
+  },
+  {
+    id: 'kafilasuci',
+    slug: 'kafilasuci',
+    namaBrand: 'Kafila Suci Production',
+    ownerId: 'owner-kafilasuci-002',
+    ownerEmail: 'kafilasuci@gmail.com',
+    ownerWhatsApp: '081398765432',
+    customDomain: 'kafilasuci.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 60 * 86400000,
+    expiredAt: Date.now() + 180 * 86400000,
+    catatan: 'Wedding & Event Cinema',
+  },
+  {
+    id: 'lensa-art',
+    slug: 'lensa-art',
+    namaBrand: 'Lensa Art Photography',
+    ownerId: 'owner-lensaart-003',
+    ownerEmail: 'halo@lensaart.id',
+    ownerWhatsApp: '085712345678',
+    customDomain: 'lensaart.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 45 * 86400000,
+    expiredAt: Date.now() + 120 * 86400000,
+    catatan: 'Studio Foto Wisuda & Keluarga',
+  },
+  {
+    id: 'vogue-moment',
+    slug: 'vogue-moment',
+    namaBrand: 'Vogue Moment Visuals',
+    ownerId: 'owner-vogue-004',
+    ownerEmail: 'contact@voguemoment.com',
+    ownerWhatsApp: '082188889999',
+    customDomain: 'voguemoment.web.app',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 30 * 86400000,
+    expiredAt: Date.now() + 365 * 86400000,
+    catatan: 'Fashion & Commercial Photography',
+  },
+  {
+    id: 'lumin-studio',
+    slug: 'lumin-studio',
+    namaBrand: 'Lumin Light Studio',
+    ownerId: 'owner-lumin-005',
+    ownerEmail: 'admin@luminstudio.com',
+    ownerWhatsApp: '087811223344',
+    customDomain: 'luminstudio.web.app',
+    tier: 'Starter',
+    status: 'TRIAL',
+    maxJadwal: 75,
+    createdAt: Date.now() - 10 * 86400000,
+    expiredAt: Date.now() + 20 * 86400000,
+    catatan: 'Masa Trial 30 Hari',
+  },
+  {
+    id: 'serene-wedding',
+    slug: 'serene-wedding',
+    namaBrand: 'Serene Moments Organizer',
+    ownerId: 'owner-serene-006',
+    ownerEmail: 'serene@wedding.id',
+    ownerWhatsApp: '081299887766',
+    customDomain: 'serenewedding.id',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 25 * 86400000,
+    expiredAt: Date.now() + 90 * 86400000,
+    catatan: 'Custom Domain Aktif',
+  },
+  {
+    id: 'maestro-mua',
+    slug: 'maestro-mua',
+    namaBrand: 'Maestro Beauty & Bride',
+    ownerId: 'owner-maestro-007',
+    ownerEmail: 'maestro.mua@gmail.com',
+    ownerWhatsApp: '085244556677',
+    customDomain: 'maestromua.web.app',
+    tier: 'Starter',
+    status: 'AKTIF',
+    maxJadwal: 75,
+    createdAt: Date.now() - 20 * 86400000,
+    expiredAt: Date.now() + 40 * 86400000,
+    catatan: 'Paket Standar MUA',
+  },
+  {
+    id: 'kinetik-cinema',
+    slug: 'kinetik-cinema',
+    namaBrand: 'Kinetik Cinema & Reels',
+    ownerId: 'owner-kinetik-008',
+    ownerEmail: 'kinetik@cinema.id',
+    ownerWhatsApp: '081900112233',
+    customDomain: 'kinetikcinema.web.app',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 15 * 86400000,
+    expiredAt: Date.now() + 300 * 86400000,
+    catatan: 'Drone & Video Multicam',
+  },
+  {
+    id: 'elegance-attire',
+    slug: 'elegance-attire',
+    namaBrand: 'Elegance Bridal & Kebaya',
+    ownerId: 'owner-elegance-009',
+    ownerEmail: 'elegance@bridal.com',
+    ownerWhatsApp: '083877665544',
+    customDomain: 'elegancebridal.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 35 * 86400000,
+    expiredAt: Date.now() + 150 * 86400000,
+    catatan: 'Sewa Busana Pengantin',
+  },
+  {
+    id: 'harmony-sound',
+    slug: 'harmony-sound',
+    namaBrand: 'Harmony Acoustic & Sound',
+    ownerId: 'owner-harmony-010',
+    ownerEmail: 'harmony@sound.id',
+    ownerWhatsApp: '081266554433',
+    customDomain: 'harmonysound.web.app',
+    tier: 'Starter',
+    status: 'SUSPENDED',
+    maxJadwal: 75,
+    createdAt: Date.now() - 120 * 86400000,
+    expiredAt: Date.now() - 5 * 86400000,
+    catatan: 'Perlu Perpanjangan Lisensi',
+  },
+  {
+    id: 'artisan-craft',
+    slug: 'artisan-craft',
+    namaBrand: 'Artisan Storyteller',
+    ownerId: 'owner-artisan-011',
+    ownerEmail: 'artisan@story.id',
+    ownerWhatsApp: '081377889900',
+    customDomain: 'artisanstory.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 14 * 86400000,
+    expiredAt: Date.now() + 80 * 86400000,
+    catatan: 'Dokumentasi Intimate Wedding',
+  },
+  {
+    id: 'prisma-photoworks',
+    slug: 'prisma-photoworks',
+    namaBrand: 'Prisma Photoworks',
+    ownerId: 'owner-prisma-012',
+    ownerEmail: 'prisma@photoworks.com',
+    ownerWhatsApp: '082233445566',
+    customDomain: 'prismaphoto.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 50 * 86400000,
+    expiredAt: Date.now() + 140 * 86400000,
+    catatan: 'Studio Foto Bayi & Newborn',
+  },
+  {
+    id: 'velvet-glam',
+    slug: 'velvet-glam',
+    namaBrand: 'Velvet Glamour Decor',
+    ownerId: 'owner-velvet-013',
+    ownerEmail: 'velvet@glam.id',
+    ownerWhatsApp: '085799001122',
+    customDomain: 'velvetglamour.id',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 40 * 86400000,
+    expiredAt: Date.now() + 280 * 86400000,
+    catatan: 'Dekorasi Mewah Pelaminan',
+  },
+  {
+    id: 'chroma-lens',
+    slug: 'chroma-lens',
+    namaBrand: 'Chroma Studio Bandung',
+    ownerId: 'owner-chroma-014',
+    ownerEmail: 'chroma@bandung.id',
+    ownerWhatsApp: '081233221100',
+    customDomain: 'chromastudio.web.app',
+    tier: 'Starter',
+    status: 'AKTIF',
+    maxJadwal: 75,
+    createdAt: Date.now() - 18 * 86400000,
+    expiredAt: Date.now() + 45 * 86400000,
+    catatan: 'Cabang Dago Bandung',
+  },
+  {
+    id: 'opus-mc',
+    slug: 'opus-mc',
+    namaBrand: 'Opus Master of Ceremony',
+    ownerId: 'owner-opus-015',
+    ownerEmail: 'opusmc@protokol.id',
+    ownerWhatsApp: '087788991122',
+    customDomain: 'opusmc.web.app',
+    tier: 'Starter',
+    status: 'AKTIF',
+    maxJadwal: 75,
+    createdAt: Date.now() - 8 * 86400000,
+    expiredAt: Date.now() + 50 * 86400000,
+    catatan: 'MC Bilingual & Adat',
+  },
+  {
+    id: 'solaris-imaging',
+    slug: 'solaris-imaging',
+    namaBrand: 'Solaris Aerial Imaging',
+    ownerId: 'owner-solaris-016',
+    ownerEmail: 'solaris@aerial.com',
+    ownerWhatsApp: '081988776655',
+    customDomain: 'solarisimaging.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 28 * 86400000,
+    expiredAt: Date.now() + 95 * 86400000,
+    catatan: 'Jasa Pemetaan & Dokumentasi Drone',
+  },
+  {
+    id: 'miracle-booth',
+    slug: 'miracle-booth',
+    namaBrand: 'Miracle Photobooth 360',
+    ownerId: 'owner-miracle-017',
+    ownerEmail: 'miracle@booth360.id',
+    ownerWhatsApp: '085811223344',
+    customDomain: 'miraclebooth.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 12 * 86400000,
+    expiredAt: Date.now() + 75 * 86400000,
+    catatan: 'Photobooth Cetak Cepat Event',
+  },
+  {
+    id: 'aura-prewed',
+    slug: 'aura-prewed',
+    namaBrand: 'Aura Prewedding Story',
+    ownerId: 'owner-aura-018',
+    ownerEmail: 'aura@prewed.com',
+    ownerWhatsApp: '081322110099',
+    customDomain: 'auraprewed.web.app',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 70 * 86400000,
+    expiredAt: Date.now() + 295 * 86400000,
+    catatan: 'Prewedding Outdoor & Wisata',
+  },
+  {
+    id: 'infinity-clip',
+    slug: 'infinity-clip',
+    namaBrand: 'Infinity Highlight Maker',
+    ownerId: 'owner-infinity-019',
+    ownerEmail: 'infinity@highlight.id',
+    ownerWhatsApp: '082144332211',
+    customDomain: 'infinityclip.web.app',
+    tier: 'Starter',
+    status: 'TRIAL',
+    maxJadwal: 75,
+    createdAt: Date.now() - 5 * 86400000,
+    expiredAt: Date.now() + 25 * 86400000,
+    catatan: 'Trial Baru Bergabung',
+  },
+  {
+    id: 'flawless-mua',
+    slug: 'flawless-mua',
+    namaBrand: 'Flawless Touch by Nia',
+    ownerId: 'owner-flawless-020',
+    ownerEmail: 'nia@flawlessmua.id',
+    ownerWhatsApp: '081277665544',
+    customDomain: 'flawlessmua.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 65 * 86400000,
+    expiredAt: Date.now() + 115 * 86400000,
+    catatan: 'MUA Wisuda & Resepsi',
+  },
+  {
+    id: 'symphony-wo',
+    slug: 'symphony-wo',
+    namaBrand: 'Symphony Wedding Planner',
+    ownerId: 'owner-symphony-021',
+    ownerEmail: 'symphony@planner.id',
+    ownerWhatsApp: '087899001122',
+    customDomain: 'symphonyplanner.id',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 95 * 86400000,
+    expiredAt: Date.now() + 270 * 86400000,
+    catatan: 'Wedding Organizer Full Package',
+  },
+  {
+    id: 'fokus-lens',
+    slug: 'fokus-lens',
+    namaBrand: 'Fokus Visual Lab',
+    ownerId: 'owner-fokus-022',
+    ownerEmail: 'fokus@visuallab.com',
+    ownerWhatsApp: '085733445566',
+    customDomain: 'fokuslens.web.app',
+    tier: 'Starter',
+    status: 'AKTIF',
+    maxJadwal: 75,
+    createdAt: Date.now() - 22 * 86400000,
+    expiredAt: Date.now() + 38 * 86400000,
+    catatan: 'Fotografi Komersial Produk UMKM',
+  },
+  {
+    id: 'nostalgia-box',
+    slug: 'nostalgia-box',
+    namaBrand: 'Nostalgia Self Photo Studio',
+    ownerId: 'owner-nostalgia-023',
+    ownerEmail: 'nostalgia@selfstudio.id',
+    ownerWhatsApp: '081211223344',
+    customDomain: 'nostalgiastudio.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 32 * 86400000,
+    expiredAt: Date.now() + 148 * 86400000,
+    catatan: 'Self Photo Studio Otomatis',
+  },
+  {
+    id: 'pesona-gaun',
+    slug: 'pesona-gaun',
+    namaBrand: 'Pesona Gaun & Adat Nusantara',
+    ownerId: 'owner-pesona-024',
+    ownerEmail: 'pesona@gaunadat.id',
+    ownerWhatsApp: '083899001122',
+    customDomain: 'pesonagaun.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 48 * 86400000,
+    expiredAt: Date.now() + 132 * 86400000,
+    catatan: 'Koleksi Busana Adat Lengkap',
+  },
+  {
+    id: 'zenith-media',
+    slug: 'zenith-media',
+    namaBrand: 'Zenith Creative Media',
+    ownerId: 'owner-zenith-025',
+    ownerEmail: 'zenith@creative.id',
+    ownerWhatsApp: '081388776655',
+    customDomain: 'zenithmedia.web.app',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 85 * 86400000,
+    expiredAt: Date.now() + 280 * 86400000,
+    catatan: 'Corporate Event & Live Streaming',
+  },
+  {
+    id: 'cinta-story',
+    slug: 'cinta-story',
+    namaBrand: 'Kisah Cinta Visual Story',
+    ownerId: 'owner-cinta-026',
+    ownerEmail: 'cinta@story.id',
+    ownerWhatsApp: '085277889900',
+    customDomain: 'cintastory.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 17 * 86400000,
+    expiredAt: Date.now() + 73 * 86400000,
+    catatan: 'Lamaran & Tunangan Dokumentasi',
+  },
+  {
+    id: 'alunan-musik',
+    slug: 'alunan-musik',
+    namaBrand: 'Alunan Nada Entertainment',
+    ownerId: 'owner-alunan-027',
+    ownerEmail: 'alunan@nada.id',
+    ownerWhatsApp: '087866554433',
+    customDomain: 'alunanmusik.web.app',
+    tier: 'Starter',
+    status: 'AKTIF',
+    maxJadwal: 75,
+    createdAt: Date.now() - 11 * 86400000,
+    expiredAt: Date.now() + 49 * 86400000,
+    catatan: 'Wedding Band & Singer Solo',
+  },
+  {
+    id: 'gemilangtenda',
+    slug: 'gemilangtenda',
+    namaBrand: 'Gemilang Tenda & Dekorasi',
+    ownerId: 'owner-gemilang-028',
+    ownerEmail: 'gemilang@tenda.id',
+    ownerWhatsApp: '081299001122',
+    customDomain: 'gemilangtenda.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 30 * 86400000,
+    expiredAt: Date.now() + 335 * 86400000,
+    catatan: 'Sewa Tenda, Panggung, Kursi & Dekorasi Pesta',
+  },
+  {
+    id: 'gemilang-tenda',
+    slug: 'gemilang-tenda',
+    namaBrand: 'Gemilang Tenda & Dekorasi',
+    ownerId: 'owner-gemilang-028',
+    ownerEmail: 'gemilang@tenda.id',
+    ownerWhatsApp: '081299001122',
+    customDomain: 'gemilangtenda.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 30 * 86400000,
+    expiredAt: Date.now() + 335 * 86400000,
+    catatan: 'Sewa Tenda, Panggung, Kursi & Dekorasi Pesta',
+  },
+  {
+    id: 'royal-heritage',
+    slug: 'royal-heritage',
+    namaBrand: 'Royal Heritage Photography',
+    ownerId: 'owner-royal-029',
+    ownerEmail: 'royal@heritage.id',
+    ownerWhatsApp: '082266778899',
+    customDomain: 'royalheritage.id',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 110 * 86400000,
+    expiredAt: Date.now() + 255 * 86400000,
+    catatan: 'Dokumentasi Adat Kraton & Luxury',
+  },
+  {
+    id: 'studio-kita',
+    slug: 'studio-kita',
+    namaBrand: 'Studio Kita Bersama',
+    ownerId: 'owner-kita-030',
+    ownerEmail: 'studiokita@gmail.com',
+    ownerWhatsApp: '085711335577',
+    customDomain: 'studiokita.web.app',
+    tier: 'Starter',
+    status: 'AKTIF',
+    maxJadwal: 75,
+    createdAt: Date.now() - 19 * 86400000,
+    expiredAt: Date.now() + 41 * 86400000,
+    catatan: 'Studio Foto Paspor & Ijazah',
+  },
+  {
+    id: 'blissful-event',
+    slug: 'blissful-event',
+    namaBrand: 'Blissful Event Organizer',
+    ownerId: 'owner-blissful-031',
+    ownerEmail: 'blissful@event.com',
+    ownerWhatsApp: '081344556677',
+    customDomain: 'blissfulevent.web.app',
+    tier: 'Pro',
+    status: 'AKTIF',
+    maxJadwal: 300,
+    createdAt: Date.now() - 29 * 86400000,
+    expiredAt: Date.now() + 91 * 86400000,
+    catatan: 'Birthday & Sweet Seventeen',
+  },
+  {
+    id: 'radiant-cinema',
+    slug: 'radiant-cinema',
+    namaBrand: 'Radiant Cinematic Motion',
+    ownerId: 'owner-radiant-032',
+    ownerEmail: 'radiant@cinema.com',
+    ownerWhatsApp: '082199887766',
+    customDomain: 'radiantcinema.web.app',
+    tier: 'Ultimate',
+    status: 'AKTIF',
+    maxJadwal: 99999,
+    createdAt: Date.now() - 38 * 86400000,
+    expiredAt: Date.now() + 327 * 86400000,
+    catatan: 'Cinematic Teaser & Same Day Edit',
+  },
+];
+
+export function getLocalCachedBrands(): BrandRegistryItem[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY_BRANDS_REGISTRY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const realOnly = parsed.filter(
+          (b) =>
+            b.id === 'kfls' ||
+            (!b.ownerId?.startsWith('owner-') &&
+              !['kafilasuci', 'lensa-art', 'vogue-moment', 'sunset-studio', 'grand-ballroom', 'neo-cinema', 'purnama-decor', 'elixir-sound', 'baskoro-foto', 'harmoni-mua', 'velocity-drone', 'sagara-pro', 'signature-cake', 'lumina-photolab', 'aksara-mc', 'kencana-catering', 'aura-prewed', 'infinity-clip', 'flawless-mua', 'symphony-wo', 'fokus-lens', 'nostalgia-box', 'pesona-gaun', 'zenith-media', 'cinta-story', 'alunan-musik', 'gemilangtenda', 'gemilang-tenda', 'royal-heritage', 'studio-kita', 'blissful-event', 'radiant-cinema'].includes(b.slug))
+        );
+        return realOnly;
+      }
+    }
+  } catch {}
+  return [];
+}
+
+export function saveLocalCachedBrands(list: BrandRegistryItem[]): void {
+  try {
+    localStorage.setItem(LOCAL_KEY_BRANDS_REGISTRY, JSON.stringify(list));
+  } catch (err) {
+    console.error('Gagal menyimpan cache brands:', err);
+  }
+}
+
+/**
+ * Mengambil seluruh registri brand dari Firestore.
+ * Jika Firestore belum terisi, otomatis gunakan SEED_BRANDS_REGISTRY dan tawarkan sinkronisasi.
+ */
+export async function fetchBrandsRegistryFromFirebase(): Promise<BrandRegistryItem[]> {
+  const init = initKafelaFirebase();
+  if (!init) {
+    return getLocalCachedBrands();
+  }
+
+  try {
+    const items: BrandRegistryItem[] = [];
+
+    // 1. Ambil otomatis seluruh studio/owner dari koleksi 'owners' di Firestore
+    try {
+      const ownersSnap = await getDocs(collection(init.db, 'owners'));
+      ownersSnap.forEach((docSnap) => {
+        const d = docSnap.data();
+        const ownerId = docSnap.id;
+        const slug = (d.username as string) || (d.slug as string) || ownerId;
+        const namaBrand = (d.namaBrand as string) || (d.namaOwner as string) || 'Studio';
+        const noWhatsApp = (d.noWhatsApp as string) || '';
+        const email = (d.email as string) || (noWhatsApp.includes('@') ? noWhatsApp : undefined);
+        const tier = (d.paketAktif as BrandRegistryItem['tier']) || 'Ultimate';
+        const tanggalDaftar = typeof d.tanggalDaftar === 'number' ? d.tanggalDaftar : Date.now();
+        const tanggalLangganan = typeof d.tanggalLangganan === 'number' ? d.tanggalLangganan : Date.now() + 365 * 86400000;
+
+        items.push({
+          id: ownerId,
+          slug: slug.toLowerCase().replace(/[^a-z0-9]/g, ''),
+          namaBrand,
+          ownerId,
+          ownerEmail: email,
+          ownerWhatsApp: noWhatsApp,
+          tier,
+          status: 'AKTIF',
+          maxJadwal: tier === 'Ultimate' ? 99999 : tier === 'Pro' ? 300 : 75,
+          createdAt: tanggalDaftar,
+          expiredAt: tanggalLangganan,
+          catatan: (d.jenisUsaha as string) || 'Studio Mandiri',
+        });
+      });
+    } catch (e) {
+      console.warn('Gagal membaca koleksi owners:', e);
+    }
+
+    // 2. Ambil juga dari 'brands_registry' jika ada
+    try {
+      const collRef = collection(init.db, 'brands_registry');
+      const snap = await getDocs(collRef);
+      snap.forEach((docSnap) => {
+        const d = docSnap.data();
+        const slug = (d.slug as string) || docSnap.id;
+        if (!items.some((i) => i.slug === slug || i.ownerId === d.ownerId)) {
+          items.push({
+            id: docSnap.id,
+            slug: (d.slug as string) || docSnap.id,
+            namaBrand: (d.namaBrand as string) || 'Studio Tanpa Nama',
+            ownerId: (d.ownerId as string) || docSnap.id,
+            ownerEmail: d.ownerEmail as string | undefined,
+            ownerWhatsApp: d.ownerWhatsApp as string | undefined,
+            customDomain: d.customDomain as string | undefined,
+            tier: (d.tier as BrandRegistryItem['tier']) || 'Pro',
+            status: (d.status as BrandRegistryItem['status']) || 'AKTIF',
+            maxJadwal: typeof d.maxJadwal === 'number' ? d.maxJadwal : 300,
+            createdAt: typeof d.createdAt === 'number' ? d.createdAt : Date.now(),
+            expiredAt: typeof d.expiredAt === 'number' ? d.expiredAt : Date.now() + 365 * 86400000,
+            catatan: d.catatan as string | undefined,
+          });
+        }
+      });
+    } catch (e) {
+      console.warn('Gagal membaca brands_registry:', e);
+    }
+
+    saveLocalCachedBrands(items);
+    return items;
+  } catch (err) {
+    console.warn('Gagal membaca dari Firestore:', err);
+    return getLocalCachedBrands();
+  }
+}
+
+/**
+ * Mencari brand berdasarkan slug URL atau custom domain
+ */
+export async function fetchBrandBySlugOrDomain(
+  identifier: string
+): Promise<BrandRegistryItem | null> {
+  const clean = identifier.trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+  if (!clean) return null;
+
+  const cached = getLocalCachedBrands();
+  const directMatch = cached.find(
+    (b) =>
+      b.slug.toLowerCase() === clean ||
+      (b.customDomain && b.customDomain.toLowerCase() === clean) ||
+      (b.customDomain && b.customDomain.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '') === clean)
+  );
+
+  const init = initKafelaFirebase();
+  if (!init) return directMatch || null;
+
+  try {
+    // 1. Coba baca doc dengan id = slug
+    const docRef = doc(init.db, 'brands_registry', clean);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const d = snap.data();
+      return {
+        id: snap.id,
+        slug: (d.slug as string) || snap.id,
+        namaBrand: (d.namaBrand as string) || 'Studio Tanpa Nama',
+        ownerId: (d.ownerId as string) || snap.id,
+        ownerEmail: d.ownerEmail as string | undefined,
+        ownerWhatsApp: d.ownerWhatsApp as string | undefined,
+        customDomain: d.customDomain as string | undefined,
+        tier: (d.tier as BrandRegistryItem['tier']) || 'Pro',
+        status: (d.status as BrandRegistryItem['status']) || 'AKTIF',
+        maxJadwal: typeof d.maxJadwal === 'number' ? d.maxJadwal : 300,
+        createdAt: typeof d.createdAt === 'number' ? d.createdAt : Date.now(),
+        expiredAt: typeof d.expiredAt === 'number' ? d.expiredAt : Date.now() + 365 * 86400000,
+        catatan: d.catatan as string | undefined,
+      };
+    }
+  } catch (err) {
+    console.warn('Gagal lookup slug di Firestore:', err);
+  }
+
+  return directMatch || null;
+}
+
+/**
+ * Menyimpan / memperbarui brand di Firestore & cache lokal
+ */
+export async function saveBrandRegistryToFirebase(
+  brand: BrandRegistryItem
+): Promise<{ success: boolean; error?: string }> {
+  const cleanSlug = brand.slug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  const payload: BrandRegistryItem = {
+    ...brand,
+    id: cleanSlug,
+    slug: cleanSlug,
+  };
+
+  // Simpan ke local cache terlebih dahulu
+  const cached = getLocalCachedBrands();
+  const index = cached.findIndex((b) => b.slug === cleanSlug);
+  if (index >= 0) {
+    cached[index] = payload;
+  } else {
+    cached.unshift(payload);
+  }
+  saveLocalCachedBrands(cached);
+
+  const init = initKafelaFirebase();
+  if (!init) {
+    return { success: true };
+  }
+
+  try {
+    const docRef = doc(init.db, 'brands_registry', cleanSlug);
+    await setDoc(docRef, payload, { merge: true });
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Gagal menyimpan brand ke Firestore:', err);
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Menghapus brand dari Firestore & cache lokal
+ */
+export async function deleteBrandRegistryFromFirebase(
+  slug: string,
+  ownerId?: string
+): Promise<{ success: boolean; error?: string }> {
+  const cleanSlug = slug.trim().toLowerCase();
+
+  const cached = getLocalCachedBrands().filter((b) => b.slug !== cleanSlug && (!ownerId || b.ownerId !== ownerId));
+  saveLocalCachedBrands(cached);
+
+  const init = initKafelaFirebase();
+  if (!init) {
+    return { success: true };
+  }
+
+  try {
+    const docRef = doc(init.db, 'brands_registry', cleanSlug);
+    await deleteDoc(docRef);
+
+    if (ownerId) {
+      try {
+        const ownerDocRef = doc(init.db, 'owners', ownerId);
+        await deleteDoc(ownerDocRef);
+      } catch (e) {
+        console.warn('Gagal menghapus doc owner:', e);
+      }
+    }
+
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Gagal menghapus brand dari Firestore:', err);
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Batch upload / sinkronisasi seed brands ke Firestore
+ */
+export async function syncAllBrandsToFirebase(
+  brands: BrandRegistryItem[]
+): Promise<{ total: number; successCount: number }> {
+  const init = initKafelaFirebase();
+  if (!init) return { total: brands.length, successCount: 0 };
+
+  let count = 0;
+  for (const b of brands) {
+    try {
+      const docRef = doc(init.db, 'brands_registry', b.slug);
+      await setDoc(docRef, b, { merge: true });
+      count++;
+    } catch (err) {
+      console.warn(`Gagal sync brand ${b.slug}:`, err);
+    }
+  }
+  return { total: brands.length, successCount: count };
+}
+
 

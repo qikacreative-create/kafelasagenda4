@@ -29,6 +29,13 @@ service cloud.firestore {
 
     // --- Rules ---
 
+    // 0. Direktori Pendaftaran Brand Multi-Tenant
+    match /brands_registry/{slug} {
+      // Dibaca publik agar lookup brand via subdomain / custom domain / slug selalu berhasil
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
     // 1. Indeks peran staf (hanya bisa diakses sistem/user terkait)
     match /tim_studio/{uid} {
       allow read: if isSignedIn() && (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Archive,
   ArrowDown,
@@ -34,6 +34,7 @@ import {
   PaketLayanan,
   RekeningModel,
   UserRoleType,
+  WebLayoutType,
 } from '../types/kafela';
 import {
   bersihkanSlugBrand,
@@ -435,25 +436,10 @@ export const ArsipPencarianView: React.FC<{
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-bold text-white">
-              Cari Data & Gudang Arsip Kompresi (Smart Archive)
+              Cari Data & Arsip
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              const count = onRunCompression60Days();
-              setCompressToast(
-                count > 0
-                  ? `${count} jadwal lama (> 60 hari) berhasil dikompresi ke gudang arsip!`
-                  : 'Seluruh jadwal aktif masih berusia di bawah 60 hari (Sudah Optimal).'
-              );
-              setTimeout(() => setCompressToast(null), 4000);
-            }}
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-bold text-white cursor-pointer transition-colors"
-          >
-            <FolderArchive className="w-4 h-4" />
-            <span>Kompresi Jadwal &gt; 60 Hari</span>
-          </button>
+        
         </div>
 
         {compressToast && (
@@ -1343,12 +1329,15 @@ export const PengaturanStudioView: React.FC<{
   const [namaOwner, setNamaOwner] = useState(owner.namaOwner);
   const [jenisUsaha, setJenisUsaha] = useState(owner.jenisUsaha);
   const [noWa, setNoWa] = useState(owner.noWhatsApp);
+  const [emailStudio, setEmailStudio] = useState(owner.email || '');
 
   const [usernameWeb, setUsernameWeb] = useState(owner.username || owner.uid || 'kafelastudio');
   const [taglineWeb, setTaglineWeb] = useState(owner.taglineWeb);
   const [bioWeb, setBioWeb] = useState(owner.bioWeb || '');
   const [linkIg, setLinkIg] = useState(owner.linkIg);
   const [linkTiktok, setLinkTiktok] = useState(owner.linkTiktok);
+  const [linkYoutube, setLinkYoutube] = useState(owner.linkYoutube || '');
+  const [linkFacebook, setLinkFacebook] = useState(owner.linkFacebook || '');
   const [lokasi1, setLokasi1] = useState(owner.lokasi1);
   const [lokasi2, setLokasi2] = useState(owner.lokasi2 || '');
   const [lokasi3, setLokasi3] = useState(owner.lokasi3 || '');
@@ -1362,7 +1351,7 @@ export const PengaturanStudioView: React.FC<{
   const [temaWeb, setTemaWeb] = useState<'MODERN_STUDIO' | 'LUXURY_GOLD' | 'CLEAN_MINIMALIST' | 'VERTICAL_LANDING'>(
     owner.temaWeb || 'MODERN_STUDIO'
   );
-  const [layoutWeb, setLayoutWeb] = useState<'HORIZONTAL_BOOK' | 'VERTICAL_LANDING'>(
+  const [layoutWeb, setLayoutWeb] = useState<WebLayoutType>(
     owner.layoutWeb || 'HORIZONTAL_BOOK'
   );
   const [pesanPenutupWeb, setPesanPenutupWeb] = useState(owner.pesanPenutupWeb || '');
@@ -1387,7 +1376,7 @@ export const PengaturanStudioView: React.FC<{
   const [web2Tema, setWeb2Tema] = useState<'MODERN_STUDIO' | 'LUXURY_GOLD' | 'CLEAN_MINIMALIST' | 'VERTICAL_LANDING'>(
     owner.webProfil2?.temaWeb || 'VERTICAL_LANDING'
   );
-  const [web2Layout, setWeb2Layout] = useState<'HORIZONTAL_BOOK' | 'VERTICAL_LANDING'>(
+  const [web2Layout, setWeb2Layout] = useState<WebLayoutType>(
     owner.webProfil2?.layoutWeb || 'VERTICAL_LANDING'
   );
   const [web2LinkBookingKhusus, setWeb2LinkBookingKhusus] = useState(owner.webProfil2?.linkBookingKhusus || '');
@@ -1413,11 +1402,14 @@ export const PengaturanStudioView: React.FC<{
     setNamaOwner(owner.namaOwner || '');
     setJenisUsaha(owner.jenisUsaha || '');
     setNoWa(owner.noWhatsApp || '');
+    setEmailStudio(owner.email || '');
     setUsernameWeb(owner.username || owner.uid || 'kafelastudio');
     setTaglineWeb(owner.taglineWeb || '');
     setBioWeb(owner.bioWeb || '');
     setLinkIg(owner.linkIg || '');
     setLinkTiktok(owner.linkTiktok || '');
+    setLinkYoutube(owner.linkYoutube || '');
+    setLinkFacebook(owner.linkFacebook || '');
     setLokasi1(owner.lokasi1 || '');
     setLokasi2(owner.lokasi2 || '');
     setLokasi3(owner.lokasi3 || '');
@@ -1616,11 +1608,73 @@ export const PengaturanStudioView: React.FC<{
     }
   };
 
-  const targetIdParam = (usernameWeb || owner.uid || '').trim();
-  const linkProfilUtama = `kflsagnd.web.app/${targetIdParam}`;
-  const linkBookingUtama = `kflsagnd.web.app/b/${targetIdParam}`;
+  const targetIdParam = (owner.username || usernameWeb || 'studio').trim();
+  const linkProfilUtama = `${targetIdParam}.web.app`;
+  const linkBookingUtama = `${targetIdParam}.web.app/booking`;
   const localBookingUrl = `/booking.html?id=${encodeURIComponent(targetIdParam)}&tema=${encodeURIComponent(temaWeb)}&v=${previewReloadKey}`;
-  const localProfilUrl = `/profil.html?id=${encodeURIComponent(targetIdParam)}&tema=${encodeURIComponent(temaWeb)}&v=${previewReloadKey}`;
+  const localProfilUrl = `/profil.html?id=${encodeURIComponent(targetIdParam)}&uid=${encodeURIComponent(owner.uid || '')}&preview=1&tema=${encodeURIComponent(temaWeb)}&v=${previewReloadKey}`;
+
+  // Sinkronisasi data draft ke sessionStorage agar pratinjau live instan dan 0 kuota Firebase
+  useEffect(() => {
+    if (activeWebPreview === 'PROFIL') {
+      try {
+        const draft = {
+          ownerUid: owner.uid,
+          namaBrand: namaBrand || 'Studio',
+          namaOwner,
+          jenisUsaha,
+          username: usernameWeb,
+          noWhatsApp: noWa,
+          taglineWeb,
+          bioWeb,
+          temaWeb,
+          layoutWeb,
+          linkIg,
+          linkTiktok,
+          lokasi1,
+          lokasi2,
+          lokasi3,
+          logoBrandUrl: logoWeb,
+          portofolioWeb: portoPhotos.filter(Boolean),
+          portofolioCaptions: portoCaptions,
+          pesanPenutupWeb,
+          jamOperasionalWeb,
+          ctaTeksKustom,
+          ctaLinkKustom,
+          teksTombolBooking,
+          isWebsiteActive: true,
+        };
+        sessionStorage.setItem('current_owner_preview_draft', JSON.stringify(draft));
+      } catch (e) {
+        console.warn('Gagal simpan draft preview:', e);
+      }
+    }
+  }, [
+    activeWebPreview,
+    owner.uid,
+    namaBrand,
+    namaOwner,
+    jenisUsaha,
+    usernameWeb,
+    noWa,
+    taglineWeb,
+    bioWeb,
+    temaWeb,
+    layoutWeb,
+    linkIg,
+    linkTiktok,
+    lokasi1,
+    lokasi2,
+    lokasi3,
+    logoWeb,
+    portoPhotos,
+    portoCaptions,
+    pesanPenutupWeb,
+    jamOperasionalWeb,
+    ctaTeksKustom,
+    ctaLinkKustom,
+    teksTombolBooking,
+  ]);
 
   const sisaHari = Math.max(
     0,
@@ -1720,7 +1774,7 @@ export const PengaturanStudioView: React.FC<{
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             <div>
               <label className="block text-slate-400 mb-1">Jenis Usaha Utama (Modul Form)</label>
               <select
@@ -1741,7 +1795,18 @@ export const PengaturanStudioView: React.FC<{
                 type="tel"
                 value={noWa}
                 onChange={(e) => setNoWa(e.target.value)}
+                placeholder="08123456789"
                 className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2.5 text-white font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-400 mb-1">Email Kontak (Opsional)</label>
+              <input
+                type="email"
+                value={emailStudio}
+                onChange={(e) => setEmailStudio(e.target.value)}
+                placeholder="studio@email.com"
+                className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2.5 text-white"
               />
             </div>
           </div>
@@ -1756,8 +1821,9 @@ export const PengaturanStudioView: React.FC<{
                   namaOwner: namaOwner.trim(),
                   jenisUsaha,
                   noWhatsApp: noWa.trim(),
+                  email: emailStudio.trim(),
                 },
-                'Profil Brand & Jenis Usaha berhasil disimpan!'
+                'Profil Brand & Kontak berhasil disimpan!'
               )
             }
             className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-bold cursor-pointer"
@@ -1831,15 +1897,29 @@ export const PengaturanStudioView: React.FC<{
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-slate-400 mb-1">Username Tautan (Tanpa Spasi)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-slate-400">Username Tautan (Tanpa Spasi)</label>
+                {Boolean(owner.username && owner.username.trim().length > 0) && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    🔒 Terkunci Permanen
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={usernameWeb}
+                disabled={Boolean(owner.username && owner.username.trim().length > 0)}
                 onChange={(e) =>
                   setUsernameWeb(e.target.value.toLowerCase().replace(/\s+/g, ''))
                 }
-                className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2.5 text-white font-mono"
+                placeholder="Contoh: kaphotostudio"
+                className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2.5 text-white font-mono disabled:opacity-60 disabled:cursor-not-allowed"
               />
+              <p className="text-[10px] text-slate-400 mt-1">
+                {owner.username
+                  ? 'Username web dikunci, hubungi admin.'
+                  : 'Atur sekali dan akan dikunci permanen untuk kestabilan web.'}
+              </p>
             </div>
             <div>
               <label className="block text-slate-400 mb-1">Slogan Singkat (Tampil di Halaman Utama)</label>
@@ -1853,6 +1933,7 @@ export const PengaturanStudioView: React.FC<{
             </div>
           </div>
 
+  
           <div>
             <label className="block text-slate-400 mb-1">
               Bio / Caption Perkenalan Studio (Tampil di Halaman Utama di Bawah Slogan)
@@ -1980,7 +2061,11 @@ export const PengaturanStudioView: React.FC<{
                   </div>
                   <div className="flex items-center gap-2">
                     <a
-                      href={activeWebPreview === 'BOOKING' ? localBookingUrl : localProfilUrl}
+                      href={
+                        activeWebPreview === 'BOOKING'
+                          ? localBookingUrl
+                          : `${localProfilUrl}&layout=${layoutWeb}&tema=${temaWeb}`
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-2.5 py-1.5 rounded bg-white/10 hover:bg-white/15 text-white text-[11px] font-bold flex items-center gap-1"
@@ -2000,8 +2085,12 @@ export const PengaturanStudioView: React.FC<{
 
                 <div className="w-full rounded-xl overflow-hidden border border-slate-700 bg-[#f4f6f8] shadow-inner">
                   <iframe
-                    key={`${activeWebPreview}-${targetIdParam}-${temaWeb}`}
-                    src={activeWebPreview === 'BOOKING' ? localBookingUrl : localProfilUrl}
+                    key={`${activeWebPreview}-${targetIdParam}-${temaWeb}-${layoutWeb}`}
+                    src={
+                      activeWebPreview === 'BOOKING'
+                        ? localBookingUrl
+                        : `${localProfilUrl}&layout=${layoutWeb}&tema=${temaWeb}`
+                    }
                     title={
                       activeWebPreview === 'BOOKING'
                         ? 'Form Booking Online'
@@ -2012,9 +2101,148 @@ export const PengaturanStudioView: React.FC<{
                 </div>
               </div>
             )}
-          </div>
+          {/* 3. LINK IG, TIKTOK, YOUTUBE, FACEBOOK, EMAIL, WA & CABANG / LOKASI */}
+          <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setOpenSectionSosmed(!openSectionSosmed)}
+              className="w-full flex items-center justify-between p-3.5 text-left font-bold text-white text-xs hover:bg-slate-900/50 cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <span>🔗</span>
+                <span>Link Sosmed, Kontak &amp; Cabang</span>
+              </div>
+              <span className="text-slate-400 text-xs px-2 py-0.5 rounded bg-slate-950 border border-slate-700">
+                {openSectionSosmed ? '▲' : '▼'}
+              </span>
+            </button>
+            {openSectionSosmed && (
+              <div className="p-4 pt-0 space-y-3.5 border-t border-slate-800/80">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+                  <div>
+                    <label className="block text-slate-400 mb-1">Link Instagram</label>
+                    <input
+                      type="text"
+                      placeholder="https://instagram.com/..."
+                      value={linkIg}
+                      onChange={(e) => setLinkIg(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Link TikTok</label>
+                    <input
+                      type="text"
+                      placeholder="https://tiktok.com/@..."
+                      value={linkTiktok}
+                      onChange={(e) => setLinkTiktok(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Link YouTube</label>
+                    <input
+                      type="text"
+                      placeholder="https://youtube.com/..."
+                      value={linkYoutube}
+                      onChange={(e) => setLinkYoutube(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Link Facebook</label>
+                    <input
+                      type="text"
+                      placeholder="https://facebook.com/..."
+                      value={linkFacebook}
+                      onChange={(e) => setLinkFacebook(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Email Kontak</label>
+                    <input
+                      type="email"
+                      placeholder="email@domain.com"
+                      value={emailStudio}
+                      onChange={(e) => setEmailStudio(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Nomor WhatsApp</label>
+                    <input
+                      type="tel"
+                      placeholder="0812..."
+                      value={noWa}
+                      onChange={(e) => setNoWa(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
 
-          {/* 1. PILIHAN TEMA & TATA LETAK (TERTUTUP DEFAULT) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-slate-400 mb-1">Cabang / Lokasi 1</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Cabang Pusat..."
+                      value={lokasi1}
+                      onChange={(e) => setLokasi1(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Cabang / Lokasi 2 (Opsional)</label>
+                    <input
+                      type="text"
+                      placeholder="Cabang 2..."
+                      value={lokasi2}
+                      onChange={(e) => setLokasi2(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Cabang / Lokasi 3 (Opsional)</label>
+                    <input
+                      type="text"
+                      placeholder="Cabang 3..."
+                      value={lokasi3}
+                      onChange={(e) => setLokasi3(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            disabled={isSavingToast}
+            onClick={() =>
+              handleSaveOwnerWithToast(
+                {
+                  username: usernameWeb.trim(),
+                  taglineWeb: taglineWeb.trim(),
+                  bioWeb: bioWeb.trim(),
+                  linkIg: linkIg.trim(),
+                  linkTiktok: linkTiktok.trim(),
+                  linkYoutube: linkYoutube.trim(),
+                  linkFacebook: linkFacebook.trim(),
+                  email: emailStudio.trim(),
+                  noWhatsApp: noWa.trim(),
+                  lokasi1: lokasi1.trim(),
+                  lokasi2: lokasi2.trim(),
+                  lokasi3: lokasi3.trim(),
+                },
+                'Website & Link berhasil disimpan!'
+              )
+            }
+            className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-bold cursor-pointer"
+          >
+            {isSavingToast ? 'Menyimpan...' : 'Simpan Website & Link'}
+          </button>
+        </div>
           <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
             <button
               type="button"
@@ -2023,7 +2251,7 @@ export const PengaturanStudioView: React.FC<{
             >
               <div className="flex items-center gap-2">
                 <span>🎨</span>
-                <span>Pilih Tema, Warna &amp; Tata Letak Website</span>
+                <span>Pilih Tema, Warna &amp; Tata Letak Website (8 Pilihan Layout)</span>
               </div>
               <span className="text-slate-400 text-xs px-2 py-0.5 rounded bg-slate-950 border border-slate-700">
                 {openSectionTema ? '▲' : '▼'}
@@ -2031,73 +2259,132 @@ export const PengaturanStudioView: React.FC<{
             </button>
             {openSectionTema && (
               <div className="p-4 pt-0 space-y-4 border-t border-slate-800/80">
-                {/* PILIHAN ARSITEKTUR TATA LETAK WEBSITE */}
+                {/* PILIHAN ARSITEKTUR TATA LETAK WEBSITE (8 PILIHAN BERBEDA) */}
                 <div className="pt-3">
                   <div>
                     <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
                       <span>📱</span>
-                      <span>Pilih Gaya Tata Letak Website (UX Mode)</span>
+                      <span>Pilih Arsitektur &amp; Gaya Tata Letak Website (8 Pilihan Karakter Berbeda)</span>
                     </h4>
                     <p className="text-[11px] text-slate-400">
-                      Pilih apakah website klien tampil dalam mode buku geser samping atau scroll ke bawah alami:
+                      Setiap template memiliki struktur visual, alur navigasi, dan pengalaman interaksi yang unik:
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => setLayoutWeb('HORIZONTAL_BOOK')}
-                      className={`text-left rounded-xl p-3.5 border transition-all cursor-pointer flex flex-col justify-between gap-2 ${
-                        layoutWeb === 'HORIZONTAL_BOOK'
-                          ? 'border-purple-500 bg-purple-950/30 ring-2 ring-purple-500/40'
-                          : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                            <span>📖</span>
-                            <span>Buku Editorial Majalah</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mt-2.5">
+                    {(
+                      [
+                        {
+                          id: 'HORIZONTAL_BOOK',
+                          title: '1. Buku Editorial Majalah',
+                          subtitle: 'Sistem geser samping per bab (Lookbook Seni)',
+                          badge: 'LOOKBOOK GESER',
+                          icon: '📖',
+                          accentBorder: 'border-purple-500',
+                          desc: 'Pengalaman membuka majalah seni eksklusif. Geser ke kanan per bab halaman portofolio.',
+                        },
+                        {
+                          id: 'VERTICAL_LANDING',
+                          title: '2. Landing Page Modern',
+                          subtitle: 'Scroll vertikal alami, hero megah & konversi tinggi',
+                          badge: 'SCROLL VERTIKAL',
+                          icon: '⚡',
+                          accentBorder: 'border-emerald-500',
+                          desc: 'Sangat direkomendasikan untuk HP. Alur scrolling mulus ke bawah dengan sticky action bar.',
+                        },
+                        {
+                          id: 'CINEMATIC_SHOWCASE',
+                          title: '3. Sinematik Layar Lebar',
+                          subtitle: 'Rasio 21:9 ultra-wide, moodboard film & tiket VIP',
+                          badge: 'CINEMATIC 21:9',
+                          icon: '🎬',
+                          accentBorder: 'border-amber-500',
+                          desc: 'Gaya film festival/cinema noir. Banner layar lebar dengan horizontal filmstrip & tiket VIP.',
+                        },
+                        {
+                          id: 'GRID_MASONRY',
+                          title: '4. Galeri Masonry Pinterest',
+                          subtitle: 'Dinding foto staggered multi-tinggi & filter tag',
+                          badge: 'MASONRY WALL',
+                          icon: '🧱',
+                          accentBorder: 'border-cyan-500',
+                          desc: 'Gaya visual Pinterest/Behance. Portofolio tersaji berjenjang artistik dengan filter kategori.',
+                        },
+                        {
+                          id: 'SPLIT_EDITORIAL',
+                          title: '5. Split-Screen Atelier',
+                          subtitle: 'Panel kiri terkunci (sticky) & lookbook kanan',
+                          badge: 'DUAL PANE',
+                          icon: '⚖️',
+                          accentBorder: 'border-indigo-500',
+                          desc: 'Gaya atelier fashion Paris. Info brand terkunci di kiri, galeri foto mengalir bebas di kanan.',
+                        },
+                        {
+                          id: 'MINIMAL_LINKTREE',
+                          title: '6. Bio-Link Premium Ringkas',
+                          subtitle: 'Kartu biolink terpusat (Instagram/TikTok bio)',
+                          badge: 'BIOLINK IG/TT',
+                          icon: '🔗',
+                          accentBorder: 'border-rose-500',
+                          desc: 'Dioptimalkan untuk link bio medsos. Avatar terpusat, akordeon tarif, & tombol WA instan.',
+                        },
+                        {
+                          id: 'CAROUSEL_FULLSCREEN',
+                          title: '7. Fullscreen Slide Imersif',
+                          subtitle: '100vh layar penuh dramatis & laci katalog bawah',
+                          badge: 'IMMERSIVE 100VH',
+                          icon: '🖼️',
+                          accentBorder: 'border-sky-500',
+                          desc: 'Tampilan layar penuh 100% viewport. Transisi foto megah dengan tombol laci laci tarif.',
+                        },
+                        {
+                          id: 'RETRO_BRUTALIST',
+                          title: '8. Neo-Brutalist Pop Studio',
+                          subtitle: 'Garis hitam tegas, bayangan keras, pita marquee',
+                          badge: 'NEO BRUTALIST',
+                          icon: '🏷️',
+                          accentBorder: 'border-yellow-400',
+                          desc: 'Gaya kekinian anak muda. Garis tepi tebal, stiker taktil, bayangan keras, & badge pop.',
+                        },
+                      ] as const
+                    ).map((layoutItem) => {
+                      const isSelected = layoutWeb === layoutItem.id;
+                      return (
+                        <button
+                          key={layoutItem.id}
+                          type="button"
+                          onClick={() => setLayoutWeb(layoutItem.id)}
+                          className={`text-left rounded-xl p-3 border transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+                            isSelected
+                              ? `${layoutItem.accentBorder} bg-slate-900 ring-2 ring-purple-500/40 shadow-lg`
+                              : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                                <span>{layoutItem.icon}</span>
+                                <span className="line-clamp-1">{layoutItem.title}</span>
+                              </span>
+                              {isSelected ? (
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-extrabold shrink-0">
+                                  AKTIF
+                                </span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[9px] font-mono shrink-0">
+                                  {layoutItem.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-400 leading-relaxed">
+                              {layoutItem.desc}
+                            </p>
+                          </div>
+                          <span className="text-[10px] text-sky-400 font-semibold truncate">
+                            {layoutItem.subtitle}
                           </span>
-                          {layoutWeb === 'HORIZONTAL_BOOK' && (
-                            <span className="px-2 py-0.5 rounded bg-purple-500 text-white text-[10px] font-extrabold">
-                              AKTIF
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                          Sistem geser samping (horizontal swipe per bab). Terasa seperti membuka portofolio cetak / lookbook eksklusif.
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-purple-400 font-semibold">Gaya Majalah Seni (Geser Kanan &rarr;)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setLayoutWeb('VERTICAL_LANDING')}
-                      className={`text-left rounded-xl p-3.5 border transition-all cursor-pointer flex flex-col justify-between gap-2 ${
-                        layoutWeb === 'VERTICAL_LANDING'
-                          ? 'border-emerald-500 bg-emerald-950/30 ring-2 ring-emerald-500/40'
-                          : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                            <span>⚡</span>
-                            <span>Landing Page Modern (Scroll Bawah)</span>
-                          </span>
-                          {layoutWeb === 'VERTICAL_LANDING' && (
-                            <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-extrabold">
-                              AKTIF
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                          Scroll ke bawah alami vertikal. Hero section megah, grid foto estetik, sticky quick bar, dan konversi booking lebih tinggi.
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-emerald-400 font-semibold">Rekomendasi HP Smartphone (&darr; Scroll Bawah)</span>
-                    </button>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -2276,81 +2563,7 @@ export const PengaturanStudioView: React.FC<{
             )}
           </div>
 
-          {/* 3. LINK IG, TIKTOK & CABANG / LOKASI (TERTUTUP DEFAULT) */}
-          <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setOpenSectionSosmed(!openSectionSosmed)}
-              className="w-full flex items-center justify-between p-3.5 text-left font-bold text-white text-xs hover:bg-slate-900/50 cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <span>🔗</span>
-                <span>Link IG, TikTok &amp; Cabang / Lokasi </span>
-              </div>
-              <span className="text-slate-400 text-xs px-2 py-0.5 rounded bg-slate-950 border border-slate-700">
-                {openSectionSosmed ? '▲' : '▼'}
-              </span>
-            </button>
-            {openSectionSosmed && (
-              <div className="p-4 pt-0 space-y-3.5 border-t border-slate-800/80">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
-                  <div>
-                    <label className="block text-slate-400 mb-1">Link Instagram</label>
-                    <input
-                      type="text"
-                      placeholder="https://instagram.com/..."
-                      value={linkIg}
-                      onChange={(e) => setLinkIg(e.target.value)}
-                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1">Link TikTok</label>
-                    <input
-                      type="text"
-                      placeholder="https://tiktok.com/@..."
-                      value={linkTiktok}
-                      onChange={(e) => setLinkTiktok(e.target.value)}
-                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-slate-400 mb-1">Cabang / Lokasi 1</label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Cabang Pusat..."
-                      value={lokasi1}
-                      onChange={(e) => setLokasi1(e.target.value)}
-                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1">Cabang / Lokasi 2 (Opsional)</label>
-                    <input
-                      type="text"
-                      placeholder="Cabang 2..."
-                      value={lokasi2}
-                      onChange={(e) => setLokasi2(e.target.value)}
-                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1">Cabang / Lokasi 3 (Opsional)</label>
-                    <input
-                      type="text"
-                      placeholder="Cabang 3..."
-                      value={lokasi3}
-                      onChange={(e) => setLokasi3(e.target.value)}
-                      className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* 4. UPLOAD FOTO & GALERI PORTOFOLIO (TERTUTUP DEFAULT) */}
           <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
