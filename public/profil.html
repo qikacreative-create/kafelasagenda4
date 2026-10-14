@@ -1245,7 +1245,7 @@
             border: 1.5px solid var(--am-line);
             box-shadow: var(--am-shadow);
             margin-bottom: 24px;
-            cursor: zoom-in;
+            cursor: default;
         }
 
         .featured-karya-hero img {
@@ -1292,17 +1292,6 @@
             font-weight: 700;
             color: #ffffff;
             line-height: 1.15;
-        }
-
-        .featured-zoom-pill {
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 99px;
-            font-size: 12px;
-            font-weight: 700;
         }
 
         .gal-grid {
@@ -1695,14 +1684,13 @@
                     </div>
 
                     <!-- 1 FOTO UTAMA BESAR DI ATAS HALAMAN PORTOFOLIO -->
-                    <div id="featuredKaryaWrap" class="featured-karya-hero" onclick="bukaLightbox(featuredKaryaUrl, featuredKaryaTitle)">
+                    <div id="featuredKaryaWrap" class="featured-karya-hero">
                         <img id="featuredKaryaImg" src="" alt="Foto Utama">
                         <div class="featured-karya-caption">
                             <div>
                                 <span class="featured-karya-badge">Foto Pilihan</span>
                                 <h3 id="featuredKaryaTitleEl" class="featured-karya-title">Koleksi Portofolio</h3>
                             </div>
-                            <span class="featured-zoom-pill">&#128269; Perbesar</span>
                         </div>
                     </div>
 
@@ -2635,11 +2623,8 @@
     }
     window.pilihKaryaUtama = pilihKaryaUtama;
 
-    function klikItemGaleri(idx, url, title) {
+    function klikItemGaleri(idx) {
         pilihKaryaUtama(idx);
-        if (typeof window.bukaLightbox === 'function') {
-            window.bukaLightbox(url, title);
-        }
     }
     window.klikItemGaleri = klikItemGaleri;
 
@@ -2711,20 +2696,10 @@
         }
     }
 
-    function bukaLightbox(url, captionText) {
-        const lbImg = document.getElementById('lightboxImg');
-        if (lbImg) lbImg.src = url || '';
-        const lbCap = document.getElementById('lightboxCaption');
-        if (lbCap) lbCap.innerText = captionText || '';
-        const lbModal = document.getElementById('lightboxModal');
-        if (lbModal) lbModal.classList.add('open');
-    }
+    function bukaLightbox() {}
     window.bukaLightbox = bukaLightbox;
 
-    function tutupLightbox() {
-        const lbModal = document.getElementById('lightboxModal');
-        if (lbModal) lbModal.classList.remove('open');
-    }
+    function tutupLightbox() {}
     window.tutupLightbox = tutupLightbox;
 
     window.bukaChatWA = function() {
