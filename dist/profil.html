@@ -256,7 +256,6 @@
             border: 1px solid rgba(212, 175, 55, 0.35) !important;
             box-shadow: 0 24px 60px rgba(0,0,0,0.85) !important;
         }
-        /* Reel Filmstrip Horizontal untuk Sinematik 21:9 */
         body[data-layout="CINEMATIC_SHOWCASE"] .gal-grid {
             display: flex !important;
             flex-wrap: nowrap !important;
@@ -1660,11 +1659,9 @@
                         <div class="logo-clickable" style="width: 78px; height: 78px; border-radius: 50%; overflow: hidden; margin: 0 auto 14px; border: 2px solid rgba(255,255,255,0.65); background: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.28);" onclick="handleLogoClick(event)" title="Klik 3x untuk Portal Kru">
                             <img id="coverLogoImg" src="/logo-kafela.svg" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                         </div>
-                        <div id="cinematicBadgeEl" class="cinematic-badge" style="display: none;">
-                            <span>🎬</span> <span>21:9 Widescreen Premiere Showcase</span>
-                        </div>
+                      
                         <p id="coverJenisEl" class="cover-eyebrow js-jenis-usaha" style="display: none;"></p>
-                        <h1 class="cover-title js-nama-brand" style="margin-bottom: 8px;"></h1>
+                        <h1 class="cover-title js-nama-brand"  style="margin-bottom: 8px;"></h1>
                         <p id="coverSubJudulEl" style="display: none; font-size: 12.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #fbbf24; margin-bottom: 12px;"></p>
                         <p id="coverTaglineEl" style="display: none; font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: clamp(19px, 2.4vw, 25px); color: #f6e3ba; margin: 0 auto 12px; max-width: 600px; line-height: 1.35;"></p>
                         <p id="coverBioEl" style="display: none; font-size: 13.5px; color: rgba(255,255,255,0.9); max-width: 560px; margin: 0 auto 20px; line-height: 1.65; white-space: pre-line;"></p>
@@ -2443,26 +2440,7 @@
             }
         }
 
-        // Tombol CTA Kustom Tambahan (WhatsApp Konsultasi / Maps / Drive)
-        const blockCustomCta = document.getElementById('blockCustomCta');
-        const btnCustomCta = document.getElementById('btnCustomCta');
-        const labelCustomCta = document.getElementById('labelCustomCta');
-        if (blockCustomCta && btnCustomCta && labelCustomCta) {
-            if (data.ctaLinkKustom && data.ctaLinkKustom.trim() !== '') {
-                btnCustomCta.href = data.ctaLinkKustom.trim();
-                labelCustomCta.innerText = data.ctaTeksKustom && data.ctaTeksKustom.trim() !== '' ? data.ctaTeksKustom.trim() : 'Hubungi WhatsApp';
-                blockCustomCta.style.display = 'block';
-            } else if (data.noWhatsApp) {
-                let cleanWa = data.noWhatsApp.replace(/[^0-9]/g, '');
-                if (cleanWa.startsWith('0')) cleanWa = '62' + cleanWa.substring(1);
-                btnCustomCta.href = `https://wa.me/${cleanWa}?text=${encodeURIComponent('Halo ' + nama + ', saya ingin bertanya mengenai layanan...')}`;
-                labelCustomCta.innerText = '💬 Chat Konsultasi WhatsApp';
-                blockCustomCta.style.display = 'block';
-            } else {
-                blockCustomCta.style.display = 'none';
-            }
-        }
-
+ 
         // Custom Label Tombol Booking
         const customBookingLabel = (data.teksTombolBooking || '').trim();
         if (customBookingLabel) {
