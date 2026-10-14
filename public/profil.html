@@ -2578,52 +2578,70 @@
             coverEl.src = sourceItems[0].url;
         }
 
-        // Foto untuk Halaman Galeri: Ambil Foto 2 s/d 8 (atau Foto 1 jika baru 1 foto)
-        const karyaItems = sourceItems.length > 1 ? sourceItems.slice(1) : sourceItems;
-        listKaryaItems = karyaItems.map((item, idx) => ({
+        // Tampilkan semua foto yang diunggah ke dalam galeri portofolio
+        listKaryaItems = sourceItems.map((item, idx) => ({
             url: item.url,
             judul: item.judul || `Portofolio ${String(idx + 1).padStart(2, '0')}`,
             kategori: jenisUsaha
         }));
+        window.listKaryaItems = listKaryaItems;
 
-        pilihKaryaUtama(0);
+        if (listKaryaItems.length > 0) {
+            // Jika ada minimal 2 foto, jadikan Foto 2 (index 1) sebagai Foto Pilihan Utama sesuai konfigurasi
+            // Jika hanya ada 1 foto, gunakan Foto 1 (index 0)
+            const initialIdx = listKaryaItems.length > 1 ? 1 : 0;
+            pilihKaryaUtama(initialIdx);
+        } else {
+            const featWrap = document.getElementById('featuredKaryaWrap');
+            if (featWrap) featWrap.style.display = 'none';
+        }
 
         // Hapus splash screen setelah data dimuat
         const splash = document.getElementById('splashScreen');
         if (splash) splash.style.display = 'none';
     }
 
-    window.pilihKaryaUtama = function(activeIdx) {
+    function pilihKaryaUtama(activeIdx) {
         if (!listKaryaItems || listKaryaItems.length === 0) return;
         const chosen = listKaryaItems[activeIdx] || listKaryaItems[0];
         window.featuredKaryaUrl = chosen.url;
         window.featuredKaryaTitle = chosen.judul;
 
-        // Set 1 Foto Utama di Atas Halaman Portofolio
-        document.getElementById('featuredKaryaImg').src = chosen.url;
-        document.getElementById('featuredKaryaTitleEl').innerText = chosen.judul;
+        // Set Foto Utama di Atas Halaman Portofolio
+        const featImg = document.getElementById('featuredKaryaImg');
+        if (featImg) featImg.src = chosen.url;
+        const featTitle = document.getElementById('featuredKaryaTitleEl');
+        if (featTitle) featTitle.innerText = chosen.judul;
+        const featWrap = document.getElementById('featuredKaryaWrap');
+        if (featWrap) featWrap.style.display = '';
 
         // Render Grid Foto di Bawahnya
         const amGal = document.getElementById('amGalleryGrid');
-        amGal.innerHTML = listKaryaItems.map((item, idx) => {
-            const isActive = idx === activeIdx ? 'active-thumb' : '';
-            const safeTitle = item.judul.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            return `
-                <figure class="gal ${isActive}" onclick="klikItemGaleri(${idx}, '${item.url}', '${safeTitle}')">
-                    <img src="${item.url}" alt="${safeTitle}">
-                    <figcaption>
-                        <div class="g-name">${item.judul}</div>
-                        <div class="g-tag">0${idx + 1}</div>
-                    </figcaption>
-                </figure>
-            `;
-        }).join('');
-    };
+        if (amGal) {
+            amGal.innerHTML = listKaryaItems.map((item, idx) => {
+                const isActive = idx === activeIdx ? 'active-thumb' : '';
+                const safeTitle = (item.judul || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                return `
+                    <figure class="gal ${isActive}" onclick="klikItemGaleri(${idx}, '${item.url}', '${safeTitle}')">
+                        <img src="${item.url}" alt="${safeTitle}">
+                        <figcaption>
+                            <div class="g-name">${item.judul || ''}</div>
+                            <div class="g-tag">0${idx + 1}</div>
+                        </figcaption>
+                    </figure>
+                `;
+            }).join('');
+        }
+    }
+    window.pilihKaryaUtama = pilihKaryaUtama;
 
-    window.klikItemGaleri = function(idx, url, title) {
-        window.pilihKaryaUtama(idx);
-        window.bukaLightbox(url, title);
-    };
+    function klikItemGaleri(idx, url, title) {
+        pilihKaryaUtama(idx);
+        if (typeof window.bukaLightbox === 'function') {
+            window.bukaLightbox(url, title);
+        }
+    }
+    window.klikItemGaleri = klikItemGaleri;
 
     async function muatKatalogPaket(uid) {
         const amGrid = document.getElementById('amServicesGrid');
@@ -2693,14 +2711,21 @@
         }
     }
 
-    window.bukaLightbox = function(url, captionText) {
-        document.getElementById('lightboxImg').src = url;
-        document.getElementById('lightboxCaption').innerText = captionText || '';
-        document.getElementById('lightboxModal').classList.add('open');
-    };
-    window.tutupLightbox = function() {
-        document.getElementById('lightboxModal').classList.remove('open');
-    };
+    function bukaLightbox(url, captionText) {
+        const lbImg = document.getElementById('lightboxImg');
+        if (lbImg) lbImg.src = url || '';
+        const lbCap = document.getElementById('lightboxCaption');
+        if (lbCap) lbCap.innerText = captionText || '';
+        const lbModal = document.getElementById('lightboxModal');
+        if (lbModal) lbModal.classList.add('open');
+    }
+    window.bukaLightbox = bukaLightbox;
+
+    function tutupLightbox() {
+        const lbModal = document.getElementById('lightboxModal');
+        if (lbModal) lbModal.classList.remove('open');
+    }
+    window.tutupLightbox = tutupLightbox;
 
     window.bukaChatWA = function() {
         let cleanWa = (window.ownerNoWa || '').replace(/[^0-9]/g, '');
